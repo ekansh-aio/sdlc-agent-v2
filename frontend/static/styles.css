@@ -1,0 +1,121 @@
+
+.my-contanier {
+    background-color: #f0f2f6;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.custom-title {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: red;
+    z-index: 999;
+    font-family: monospace;
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    gap: 10px;
+    color: white;
+    height: 60px;
+}
+
+.custom-title img {
+    height: 40px;
+    margin-right: 10px;
+}
+
+.custom-title h3 {
+    color: white;
+    margin: 0;
+}
+
+.header-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.header-buttons button {
+    background-color: white;
+    color: red;
+    font-weight: bold;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.stApp > header {
+    background-color: transparent;
+}
+
+[data-testid="stBaseButton-secondary"] button{
+    border: solid .1em red;
+    border-radius: 10px;
+    color: black;
+    background-color: white;
+    padding: 5px 15px;    
+}
+
+[data-testid="stBaseButton-secondary"] button:hover{
+    background-color: white;    
+    border: solid .2em red;
+    border-radius: 10px;
+    color: red;
+}
+
+
+[data-testid="stDownloadButton"] button{
+    border: 1px solid red;
+}
+
+[data-testid="stExpander"]{
+    background-color: lightgrey;
+}
+
+[data-testid="stExpander"] [data-testid="stMarkdownContainer"] strong {
+    font-size: 18px;
+}
+
+.right-aligned {
+    text-align: right;
+    padding-bottom: 12px;
+}
+
+.stSidebar {
+    border: 3px solid red;
+    background-color: rgb(29, 30, 31);
+    color : white
+}
+
+[data-testid="stSidebar"] {
+    width: 410px !important;
+    top: 60px !important;
+    left: 0;
+    bottom: 0;
+    overflow-y: auto;
+    background-color: rgb(73, 84, 95);
+    padding-top: 0 !important;
+    z-index: 998;
+}
+
+[data-testid="stMainContent"] {
+    margin-left: 470px !important;
+    padding: 20px;
+    margin-top: 60px !important;
+    overflow-x: hidden !important;
+    position: relative;
+    z-index: 1;
+    background-color: white;
+}
+
+div[data-testid="stDialog"] div[role="dialog"]:has(div:contains("User Confirmation")) {
+    width: 35vw;
+    height: 20vh; 
+}
+
+div[data-testid="stDialog"] div[role="dialog"]:has(div:contains("authenticate")) {
+    width: 35vw;
+    height: 60vh; 
+}

@@ -1,0 +1,15 @@
+streamlit
+streamlit-extras
+pandas
+requests
+pyperclip
+openpyxl
+azure-storage-blob
+python-dotenv
+autogen-agentchat
+autogen-ext[azure]
+autogen-ext[openai]
+psycopg2-binary
+azure-keyvault-secrets
+azure-functions
+azure-functions-durable

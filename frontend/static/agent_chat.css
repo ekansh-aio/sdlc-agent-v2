@@ -1,0 +1,42 @@
+.chat-bubble {
+    padding: 10px 15px;
+    border-radius: 15px;
+    margin: 5px 0;
+    max-width: 75%;
+    word-wrap: break-word;
+    display: inline-block;
+}
+
+.agent-bubble {
+    background-color: #f1f0f0;
+    color: #000;
+    text-align: left;
+    border-top-left-radius: 0;
+}
+
+.user-bubble {
+    background-color: #0078D7;
+    color: white;
+    text-align: right;
+    margin-left: auto;
+    border-top-right-radius: 0;
+}
+
+.name-label {
+    font-size: 0.85rem;
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+
+.chat-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-box {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
