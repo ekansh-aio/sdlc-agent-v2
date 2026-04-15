@@ -140,8 +140,12 @@ class TestCaseProcessor:
                     except:
                         pass
 
+                # Keep a raw copy of the agent's JSON block for fallback
+                raw_json_block = ""
                 try:
                     filter_data = [i for i in final_data if "```json" in i]
+                    if filter_data:
+                        raw_json_block = filter_data[0]
                     lst_of_tests = eval(filter_data[0].split("```json\n")[1].split("```")[0])
                     lst_of_tests = lst_of_tests.get('finalData') if lst_of_tests.get('finalData', None) else lst_of_tests['finalResponse']['finalData']
                     idx = 0
@@ -152,7 +156,7 @@ class TestCaseProcessor:
                             all_str = ''
                             for key in txt.keys():
                                 if key != 'ManualSteps':
-                                    all_str += key + ':' + txt[key] + '\n'
+                                    all_str += key + ':' + str(txt[key]) + '\n'
                                 else:
                                     all_str += 'ManualSteps: \n'
                                     for nested_data in txt[key]:
@@ -174,26 +178,35 @@ class TestCaseProcessor:
                                 if key == 'cucumber_steps' and isinstance(txt[key], list):
                                     all_str += key + ':' + '\n'.join(txt[key]) + '\n'
                                 else:
-                                    all_str += key + ':' + txt[key] + '\n'
+                                    all_str += key + ':' + str(txt[key]) + '\n'
                             display_data += (all_str + ('\n ********** \n' if idx != tests_len else ''))
                         self.result = display_data
-                    logging.info(final_data)
-                    self.result = display_data
-                except:
-                    self.result = 'Error in Exception'
+                    logging.info(f"TCG parsed {len(lst_of_tests)} test cases successfully.")
+                    # Fallback: if formatted output is empty, use the raw JSON block
+                    if not self.result and raw_json_block:
+                        self.result = raw_json_block
+                except Exception as _parse_err:
+                    logging.exception(f"TCG response parsing failed: {_parse_err}")
+                    # Fall back to raw JSON block so the user sees something
+                    self.result = raw_json_block if raw_json_block else f"Parsing error: {_parse_err}"
 
-                if filter_data:
-                    self.final_response = {
-                        "response": self.result,
-                        "chat_history": self.serialized_history,
-                        "agent_token_usage": self.agent_token_usage
-                    }
-                else:
-                    self.final_response =  {
-                        "response": "No filter_data",
-                        "chat_history": self.serialized_history,
-                        "agent_token_usage": self.agent_token_usage
-                    }
+                # Ensure chat_history is fully JSON-serializable before returning
+                safe_history = []
+                for entry in self.serialized_history:
+                    try:
+                        json.dumps(entry)
+                        safe_history.append(entry)
+                    except (TypeError, OverflowError, ValueError):
+                        safe_history.append({
+                            "source": str(entry.get("source", "")),
+                            "content": str(entry.get("content", ""))
+                        })
+
+                self.final_response = {
+                    "response": self.result or ("No test cases parsed — check agent output." if filter_data else "No filter_data from agent."),
+                    "chat_history": safe_history,
+                    "agent_token_usage": self.agent_token_usage
+                }
 
             asyncio.run(process_team())
             return self.final_response

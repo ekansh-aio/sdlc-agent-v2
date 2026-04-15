@@ -1,3 +1,4 @@
+import json
 import logging
 import azure.functions as func
 import azure.durable_functions as df
@@ -7,8 +8,14 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
 
     try:
         client = df.DurableOrchestrationClient(starter)
-        request_body = req.get_json()
-        
+
+        # Robust JSON parsing — works regardless of Content-Type header
+        try:
+            request_body = req.get_json()
+        except ValueError:
+            raw = req.get_body()
+            request_body = json.loads(raw.decode("utf-8"))
+
         logging.info(f"Api request data : '{request_body}'")
     
 

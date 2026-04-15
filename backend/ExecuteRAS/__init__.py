@@ -75,20 +75,32 @@ async def main(inputData) -> str:
         if not final_data and frg_messages:
             final_data.append(frg_messages[-1])
 
+        # Ensure chat_history is fully JSON-serializable before returning
+        safe_history = []
+        for entry in serialized_history:
+            try:
+                json.dumps(entry)
+                safe_history.append(entry)
+            except (TypeError, OverflowError, ValueError):
+                safe_history.append({
+                    "source": str(entry.get("source", "")),
+                    "content": str(entry.get("content", ""))
+                })
+
         filtered_data = [msg for msg in final_data if msg and msg.strip() != '']
         if filtered_data:
             response = filtered_data[0].rstrip()
             if response.upper().endswith("TERMINATE"):
                 response = response[:-len("TERMINATE")].rstrip()
-            return{
+            return {
                 "response": response,
-                "chat_history": serialized_history,
+                "chat_history": safe_history,
                 "agent_token_usage": agent_token_usage
             }
         else:
-            return{
+            return {
                 "response": "No valid response found",
-                "chat_history": serialized_history,
+                "chat_history": safe_history,
                 "agent_token_usage": agent_token_usage
             }
 
