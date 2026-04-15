@@ -1,5 +1,78 @@
 import streamlit as st
 from components.buttons import button_container, header_buttons
+from utils.health_check import run_frontend_checks
+
+# Status icons and colours for each check state
+_STATUS_ICON  = {"ok": "✅", "warn": "⚠️", "fail": "❌"}
+_STATUS_COLOR = {"ok": "green", "warn": "orange", "fail": "red"}
+_CHECK_LABELS = {
+    "postgresql":         "PostgreSQL (logging)",
+    "jira_endpoint":      "Jira Endpoint",
+    "azure_function_app": "Azure Function App",
+}
+
+
+def _render_system_status():
+    """
+    Runs health checks once per session (cached in session_state).
+    Renders a collapsible status panel in the sidebar.
+    Auto-expands when there is at least one warning or failure.
+    """
+    if "health_check_results" not in st.session_state:
+        st.session_state.health_check_results = run_frontend_checks()
+
+    report  = st.session_state.health_check_results
+    overall = report["overall"]
+    checks  = report["checks"]
+
+    overall_icon  = _STATUS_ICON[overall]
+    overall_color = _STATUS_COLOR[overall]
+    expand_panel  = overall in ("warn", "fail")
+
+    with st.expander(
+        f"{overall_icon} System Status",
+        expanded=expand_panel,
+    ):
+        for key, result in checks.items():
+            status  = result["status"]
+            icon    = _STATUS_ICON[status]
+            color   = _STATUS_COLOR[status]
+            label   = _CHECK_LABELS.get(key, key)
+            message = result["message"]
+
+            st.markdown(
+                f'<span style="color:{color}">{icon} **{label}**</span><br>'
+                f'<span style="font-size:0.82em; color:{color}">{message}</span>',
+                unsafe_allow_html=True,
+            )
+
+            # Show detail lines for non-ok statuses
+            if status != "ok":
+                for k, v in result.get("detail", {}).items():
+                    st.markdown(
+                        f'<span style="font-size:0.78em; color:grey; margin-left:1.5em">'
+                        f"→ **{k}**: {v}</span>",
+                        unsafe_allow_html=True,
+                    )
+
+            st.markdown("<div style='margin-bottom:4px'></div>", unsafe_allow_html=True)
+
+        if overall == "ok":
+            st.markdown(
+                "<span style='color:green; font-size:0.82em'>All systems ready.</span>",
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown(
+                "<span style='font-size:0.78em; color:grey'>"
+                "Fix issues above before running agents.</span>",
+                unsafe_allow_html=True,
+            )
+
+        if st.button("Re-check", key="health_recheck"):
+            del st.session_state.health_check_results
+            st.rerun()
+
 
 def update_jira_selected():
     st.session_state.jira_selected = st.session_state.jira_multiselect
@@ -37,6 +110,8 @@ def sidebar_display(jira):
     with st.sidebar:
 
         header_buttons()
+
+        _render_system_status()
 
         with st.container():
             st.markdown("**Please select the QE helper**")

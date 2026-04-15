@@ -8,16 +8,45 @@ from common.jira.jira_request_processor import JiraTestCaseProcessor
 from common.utils.TestCaseFormatter import TestCaseParser
 from common.prompts.prompt_manager import PromptManager
 from common.llm.llm_config import LLMConfig
+from common.health_check import run_all_checks
+
+# Run health checks once at module load (cold start).
+try:
+    _startup_report = run_all_checks()
+    if _startup_report["overall"] == "fail":
+        logging.error(
+            "ExecuteTCG cold start: one or more external dependencies are NOT ready — "
+            "requests will likely fail. See health check output above."
+        )
+    elif _startup_report["overall"] == "warn":
+        logging.warning(
+            "ExecuteTCG cold start: external dependencies have warnings — "
+            "some features may degrade. See health check output above."
+        )
+except Exception as _hc_err:
+    logging.error(f"ExecuteTCG cold start: health check itself failed: {_hc_err}")
+
 test_parser = TestCaseParser()
 model_client = LLMConfig().get_model_client()
 termination = TextMessageTermination('TERMINATE') | TextMentionTermination('TERMINATE')| MaxMessageTermination(max_messages=16)
 
 
 prompt_manager = PromptManager()
-team_prompt = prompt_manager.get_prompt(
-            ai_helper_name='TCG',
-            agent_name='team_prompt'
-        )
+# Wrapped in try/except to prevent cold-start crash when DB row is missing (Bug 1).
+# Falls back to the hardcoded constant from tcg_prompts.py.
+try:
+    team_prompt = prompt_manager.get_prompt(
+                ai_helper_name='TCG',
+                agent_name='team_prompt'
+            )
+    logging.info("ExecuteTCG: loaded team_prompt from database")
+except Exception as _prompt_err:
+    from common.prompts.tcg_prompts import team_prompt as _fallback_team_prompt
+    team_prompt = _fallback_team_prompt
+    logging.warning(
+        f"ExecuteTCG cold start: could not load 'team_prompt' from DB — "
+        f"using hardcoded fallback. Error: {_prompt_err}"
+    )
 
 
 
