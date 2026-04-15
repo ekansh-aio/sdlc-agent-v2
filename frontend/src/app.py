@@ -192,6 +192,8 @@ def escape_jira_formatting(text: str):
     return text.replace("**", "*")
 
 def load_css_agent_chat(file_path):
+    if not os.path.isabs(file_path):
+        file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", file_path)
     with open(file_path) as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
@@ -224,6 +226,9 @@ def update_jira_issue(headers,jira_id, title, description,helper_name):
         return 400, "Helper not supported for Jira updates"
 
 def get_base64_image(image_path):
+    # static/ lives at frontend/static/, one level above frontend/src/ where this script is.
+    if not os.path.isabs(image_path):
+        image_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", image_path)
     with open(image_path, "rb") as f:
         data = f.read()
     return base64.b64encode(data).decode()

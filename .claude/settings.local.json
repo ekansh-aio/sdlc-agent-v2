@@ -1,7 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "Bash(find *)"
+      "Bash(find *)",
+      "Bash(python3 *)",
+      "Bash(python *)",
+      "Bash(npm --version)",
+      "Bash(npm list *)",
+      "Bash(where.exe func *)",
+      "Bash(git log *)",
+      "Bash(frontend/.venv/Scripts/python.exe -c ' *)",
+      "Bash(D:/work/sdlc-agents/frontend/.venv/Scripts/python.exe *)"
     ]
   }
 }

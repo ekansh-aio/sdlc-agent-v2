@@ -162,11 +162,11 @@ def check_azure_function_app() -> dict:
     label    = "local Azure Functions" if is_local else "Azure Function App"
 
     try:
-        # A GET to the orchestrator endpoint returns 405 (method not allowed)
-        # when the function is running — still proves it's up.
+        # A GET to the orchestrator endpoint returns 400 (missing body) or 405 (method not allowed)
+        # when the function is running — both still prove the host is up.
         test_url = f"{app_url}/api/DurableFunctionsOrchestrator"
         r = requests.get(test_url, timeout=8)
-        if r.status_code in (200, 202, 405):
+        if r.status_code in (200, 202, 400, 405):
             return _ok(f"{label}: reachable at {app_url}", {"http_status": r.status_code})
         elif r.status_code == 404:
             return _warn(

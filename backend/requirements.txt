@@ -1,19 +1,25 @@
-streamlit
-streamlit-extras
-pandas
-requests
-pyperclip
-openpyxl
-azure-storage-blob
-python-dotenv
+# Azure Functions runtime
+azure-functions
+azure-functions-durable
+
+# AI / agent framework
 autogen-agentchat
 autogen-ext[azure]
 autogen-ext[openai]
-psycopg2-binary
-azure-keyvault-secrets
-azure-functions
-azure-functions-durable
-openai
 autogen-core
-requests_oauthlib
+openai
+
+# Azure services
+azure-storage-blob
 azure-search-documents
+azure-keyvault-secrets
+azure-identity
+
+# Database
+psycopg2-binary
+
+# Utilities
+python-dotenv
+requests
+requests_oauthlib
+pandas

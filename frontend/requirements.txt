@@ -1,15 +1,17 @@
+# UI framework
 streamlit
 streamlit-extras
+
+# Data & utilities
 pandas
 requests
 pyperclip
 openpyxl
-azure-storage-blob
 python-dotenv
-autogen-agentchat
-autogen-ext[azure]
-autogen-ext[openai]
+
+# Azure services
+azure-storage-blob
+azure-identity
+
+# Database (audit logging)
 psycopg2-binary
-azure-keyvault-secrets
-azure-functions
-azure-functions-durable

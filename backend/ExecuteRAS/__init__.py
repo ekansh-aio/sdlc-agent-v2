@@ -122,11 +122,10 @@ async def build_selector_groupchat(helper_name:str, input_type:str) -> SelectorG
     finalResponseGeneratorAgent = await builder.create_final_response_generator_agent()
     
     prompt_manager = PromptManager()
-    # prompt = prompt_manager.get_prompt(
-    #         ai_helper_name=helper_name, 
-    #         agent_name= "team_prompt"
-    #     )
-    ##adding below for local testing. Remove it later after inserting to pgsql
+    # TODO: move prompt to DB — insert row ('RAS', 'team_prompt') in agent_prompts
+    # and replace hardcoded below with:
+    #   prompt = prompt_manager.get_prompt(ai_helper_name=helper_name, agent_name='team_prompt')
+    # Keep hardcoded import as fallback (same pattern as ExecuteTCG).
     prompt = team_prompt
     
     model_client = LLMConfig().get_model_client()

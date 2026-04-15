@@ -39,8 +39,14 @@ class TCGAgentBuilder:
                 agent_name=prompt_name
             )
         elif self.test_type == 'Manual':
+            # TODO: move prompt to DB — insert row ('TCG', 'analyser_prompt_manual') in agent_prompts
+            # and replace with: prompt = prompt_manager.get_prompt(ai_helper_name='TCG', agent_name='analyser_prompt_manual')
+            # Keep hardcoded import as fallback.
             prompt = analyser_prompt_manual
         else:
+            # TODO: move prompt to DB — insert row ('TCG', 'analyser_prompt_automatic') in agent_prompts
+            # and replace with: prompt = prompt_manager.get_prompt(ai_helper_name='TCG', agent_name='analyser_prompt_automatic')
+            # Keep hardcoded import as fallback.
             prompt = analyser_prompt_automatic
 
 
@@ -56,18 +62,20 @@ class TCGAgentBuilder:
 
         if self.test_type in ['text_automatic', 'text_manual']:
             search_tool = []
+            # TODO: move prompt to DB — insert row ('TCG', 'data_extractor_prompt') in agent_prompts
+            # and replace with: system_msg = prompt_manager.get_prompt(ai_helper_name='TCG', agent_name='data_extractor_prompt')
+            # Keep hardcoded import as fallback.
             system_msg = data_extractor_prompt
         elif self.test_type == 'Manual':
             search_tool = [azure_ai_search_tool.semantic_search_tcg_manual]
+            # TODO: move prompt to DB — insert row ('TCG', 'data_extractor_prompt_jira') in agent_prompts
+            # and replace with: system_msg = prompt_manager.get_prompt(ai_helper_name='TCG', agent_name='data_extractor_prompt_jira')
+            # Keep hardcoded import as fallback.
             system_msg = data_extractor_prompt_jira
         else:
             search_tool = [azure_ai_search_tool.semantic_search_tcg_cucumber]
+            # TODO: same as Manual above — same prompt, same DB row target.
             system_msg = data_extractor_prompt_jira
-
-        # prompt = prompt_manager.get_prompt(
-        #     ai_helper_name=self.ai_helper_name,
-        #     agent_name="data_extractor_prompt"
-        # )
 
         return AssistantAgent(
             name="request_handler_agent",

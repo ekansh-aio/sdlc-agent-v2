@@ -34,11 +34,10 @@ class RASAgentBuilder:
                 )
             elif self.input_type == "jira_id":
                 agent_name = "RequestHandlerAgent_jira"
-                # prompt = self.prompt_manager.get_prompt(
-                #     ai_helper_name=self.ai_helper_name, 
-                #     agent_name= agent_name
-                # )
-                #replace below with prompt from pgsql after inserting, kept for testing
+                # TODO: move prompt to DB — insert row ('RAS', 'RequestHandlerAgent_jira') in agent_prompts
+                # and replace hardcoded fallback below with:
+                #   prompt = self.prompt_manager.get_prompt(ai_helper_name=self.ai_helper_name, agent_name=agent_name)
+                # Keep hardcoded import as fallback (same try/except pattern as ExecuteTCG team_prompt).
                 prompt = request_handler_agent
                 azure_ai_search_tool = AzureAISearchClient()
 
@@ -75,11 +74,10 @@ class RASAgentBuilder:
             )
         elif self.input_type == "jira_id":
             agent_name = "AnalyserAgent_jira"
-            # prompt = self.prompt_manager.get_prompt(
-            #     ai_helper_name=self.ai_helper_name, 
-            #     agent_name= agent_name
-            # )
-            #replace below with prompt from pgsql after inserting, kept for testing
+            # TODO: move prompt to DB — insert row ('RAS', 'AnalyserAgent_jira') in agent_prompts
+            # and replace hardcoded fallback below with:
+            #   prompt = self.prompt_manager.get_prompt(ai_helper_name=self.ai_helper_name, agent_name=agent_name)
+            # Keep hardcoded import as fallback.
             prompt = analyser_prompt
         else:
             agent_name = "AnalyserAgent"  # Default fallback
@@ -119,11 +117,10 @@ class RASAgentBuilder:
 
     async def create_final_response_generator_agent(self) -> AssistantAgent:
         agent_name = "FinalResponseGeneratorAgent"
-        # prompt = self.prompt_manager.get_prompt(
-        #     ai_helper_name=self.ai_helper_name, 
-        #     agent_name= agent_name
-        # )
-        #replace below with prompt from pgsql after inserting, kept for testing
+        # TODO: move prompt to DB — insert row ('RAS', 'FinalResponseGeneratorAgent') in agent_prompts
+        # and replace hardcoded fallback below with:
+        #   prompt = self.prompt_manager.get_prompt(ai_helper_name=self.ai_helper_name, agent_name=agent_name)
+        # Keep hardcoded import as fallback.
         prompt = final_response_generator_prompt
 
         try:
