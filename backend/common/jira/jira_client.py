@@ -6,7 +6,6 @@ import logging
 import json
 
 import base64
-import streamlit as st
 
 
 class JiraClient:
@@ -56,15 +55,12 @@ class JiraClient:
         if response.status_code == 200:
             username = response.json()
             logging.info(f"Authenticated Jira username: {username['displayName']}")
-            st.success(f"Authenticated Jira username: **{username['displayName']}**")
             return True
         elif response.status_code == 401:
             logging.warning(f"Authentication failed: Invalid username or password")
-            st.warning(f"Authentication failed: Invalid username or password")
             return False
         else:
             logging.error(f"Authentication failed: {response.status_code} - {response.text}")
-            st.warning(f"Authentication failed: {response.text}")
             return False
 
     def get_accessible_issues(self, issues_types: list[str]) -> list[str]:
@@ -78,7 +74,7 @@ class JiraClient:
         url = f"{self.base_url}/rest/api/2/search"
         start_at = 0
         all_issue_keys = []
-        max_results = st.session_state.jira_ids_max_results
+        max_results = 200
         try:
             while True:
                 params = {
@@ -120,10 +116,9 @@ class JiraClient:
             project_name = issue_data["fields"]["project"]["name"]
             description = issue_data["fields"].get("description", "No Description Available")
             summary = issue_data["fields"]["summary"]
-            st.write(f"🔹 Project: {project_name}")
-            st.write(f"🔹 Summary: {summary}")
-            st.write(f"🔹 Description: {description}")
-            print("tet")
+            logging.info(f"Project: {project_name}")
+            logging.info(f"Summary: {summary}")
+            logging.info(f"Description: {description}")
             return issue_data["key"], summary, description
         elif response.status_code == 401:
             print("Authentication failed: Invalid credentials or missing permissions.")
@@ -518,9 +513,6 @@ class JiraClient:
                 
         except Exception as e:
             logging.error(f"Exception while adding comment to {jira_id}: {str(e)}")
-                
-        except Exception as e:
-            logging.warning(f"Exception adding comment to {jira_id}: {str(e)}")
 
     def execute_jira_request_until_sucess(self, url, request_type, payload=None):
         try:

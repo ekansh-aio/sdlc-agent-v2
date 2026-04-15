@@ -10,43 +10,37 @@ from common.prompts.prompt_manager import PromptManager
 from common.llm.llm_config import LLMConfig
 from common.health_check import run_all_checks
 
-# Run health checks once at module load (cold start).
-try:
-    _startup_report = run_all_checks()
-    if _startup_report["overall"] == "fail":
-        logging.error(
-            "ExecuteTCG cold start: one or more external dependencies are NOT ready — "
-            "requests will likely fail. See health check output above."
-        )
-    elif _startup_report["overall"] == "warn":
-        logging.warning(
-            "ExecuteTCG cold start: external dependencies have warnings — "
-            "some features may degrade. See health check output above."
-        )
-except Exception as _hc_err:
-    logging.error(f"ExecuteTCG cold start: health check itself failed: {_hc_err}")
+logging.info("ExecuteTCG module loaded.")
 
 test_parser = TestCaseParser()
-model_client = LLMConfig().get_model_client()
+_model_client = None
+
+def _get_model_client():
+    global _model_client
+    if _model_client is None:
+        _model_client = LLMConfig().get_model_client()
+    return _model_client
 termination = TextMessageTermination('TERMINATE') | TextMentionTermination('TERMINATE')| MaxMessageTermination(max_messages=16)
 
 
-prompt_manager = PromptManager()
-# Wrapped in try/except to prevent cold-start crash when DB row is missing (Bug 1).
-# Falls back to the hardcoded constant from tcg_prompts.py.
-try:
-    team_prompt = prompt_manager.get_prompt(
-                ai_helper_name='TCG',
-                agent_name='team_prompt'
-            )
-    logging.info("ExecuteTCG: loaded team_prompt from database")
-except Exception as _prompt_err:
-    from common.prompts.tcg_prompts import team_prompt as _fallback_team_prompt
-    team_prompt = _fallback_team_prompt
-    logging.warning(
-        f"ExecuteTCG cold start: could not load 'team_prompt' from DB — "
-        f"using hardcoded fallback. Error: {_prompt_err}"
-    )
+from common.prompts.tcg_prompts import team_prompt as _fallback_team_prompt
+team_prompt = _fallback_team_prompt  # default; overridden on first invocation if DB is available
+
+_team_prompt_loaded = False
+
+def _load_team_prompt_if_needed():
+    global team_prompt, _team_prompt_loaded
+    if _team_prompt_loaded:
+        return
+    _team_prompt_loaded = True
+    try:
+        prompt = PromptManager().get_prompt(ai_helper_name='TCG', agent_name='team_prompt')
+        team_prompt = prompt
+        logging.info("ExecuteTCG: loaded team_prompt from database")
+    except Exception as _prompt_err:
+        logging.warning(
+            f"ExecuteTCG: could not load 'team_prompt' from DB — using hardcoded fallback. Error: {_prompt_err}"
+        )
 
 
 
@@ -99,7 +93,7 @@ class TestCaseProcessor:
                     self.issue_type).create_final_response_generator_agent()
                 team = SelectorGroupChat(
                     [request_handler_agent, analyser_agent, reviewer_agent, final_response_generator_agent],
-                    termination_condition=termination, max_turns=26, model_client=model_client,
+                    termination_condition=termination, max_turns=26, model_client=_get_model_client(),
                     selector_prompt=team_prompt
                 )
 
@@ -239,6 +233,7 @@ class TestCaseProcessor:
 
 
 def main(inputData):
+    _load_team_prompt_if_needed()
     issue_type = inputData.get("issue_type", None)
     input_type = inputData.get("input_type", None)
     request_data = inputData.get("request_data", None)
