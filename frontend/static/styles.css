@@ -1,46 +1,136 @@
 /* ============================================================
    AI Helpers for QE — Dark Theme
-   Palette: Near-Black bg · Dark Gray surfaces · Red accents · White text
+   Palette: GitHub dark · Blue / Purple / Green accents
    ============================================================ */
 
 /* ---- Design tokens ---- */
 :root {
-  --bg-base:       #0d0e10;      /* page background           */
-  --bg-surface:    #17181c;      /* cards, panels, expanders  */
-  --bg-raised:     #1f2026;      /* inputs, elevated elements */
-  --bg-hover:      #26272d;      /* hover states              */
-  --sidebar-bg:    #111215;      /* sidebar — slightly darker */
-  --sidebar-bg2:   #141518;
+  --bg-base:       #0d1117;
+  --bg-surface:    #161b22;
+  --bg-raised:     #1f2026;
+  --bg-hover:      #21262d;
+  --sidebar-bg:    #111318;
+  --sidebar-bg2:   #141820;
 
-  --red:           #cc0000;
-  --red-hover:     #e63333;
-  --red-dark:      #990000;
-  --red-glow:      rgba(204, 0, 0, 0.22);
-  --red-subtle:    rgba(204, 0, 0, 0.12);
+  --blue:          #388bfd;
+  --blue-hover:    #58a6ff;
+  --blue-muted:    rgba(56, 139, 253, 0.15);
+  --blue-glow:     rgba(56, 139, 253, 0.25);
 
-  --text-primary:  #f0f1f5;
-  --text-secondary:#a0a4b4;
-  --text-muted:    #5c5e6e;
+  /* Primary action colour — bluish-purple gradient */
+  --action:        linear-gradient(135deg, #388bfd 0%, #a371f7 100%);
+  --action-hover:  linear-gradient(135deg, #58a6ff 0%, #b88af9 100%);
+  --action-solid:  #388bfd;
+  --action-shadow: 0 4px 18px rgba(100, 100, 253, 0.40);
 
-  --border:        rgba(255, 255, 255, 0.07);
-  --border-strong: rgba(255, 255, 255, 0.13);
-  --border-red:    rgba(204, 0, 0, 0.35);
+  /* Jira action — teal/cyan accent (on-theme, not red) */
+  --jira-action:        linear-gradient(135deg, #1f8a70 0%, #12b886 100%);
+  --jira-action-hover:  linear-gradient(135deg, #2aa88a 0%, #20c997 100%);
+  --jira-action-shadow: 0 4px 18px rgba(18, 184, 134, 0.35);
 
-  --transition:    all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  --purple:        #a371f7;
+  --purple-muted:  rgba(163, 113, 247, 0.15);
+
+  --green:         #3fb950;
+  --green-muted:   rgba(63, 185, 80, 0.15);
+
+  --text-primary:  #f0f6fc;
+  --text-secondary:#c9d1d9;
+  --text-muted:    #8b949e;
+
+  --border:        rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --border-blue:   rgba(56, 139, 253, 0.35);
+
+  --transition:    all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --shadow-sm:     0 2px 10px rgba(0, 0, 0, 0.35);
   --shadow-md:     0 4px 22px rgba(0, 0, 0, 0.45);
-  --shadow-red:    0 4px 18px rgba(204, 0, 0, 0.28);
+  --shadow-blue:   0 4px 18px rgba(56, 139, 253, 0.22);
 
   --radius-sm:     8px;
   --radius-md:     12px;
   --radius-lg:     18px;
+
+  --font-ui:       'Inter', 'Segoe UI', system-ui, sans-serif;
+  --font-mono:     'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+}
+
+/* ---- Override Streamlit's internal primary-color CSS var (prevents red bleed) ---- */
+:root, [data-testid="stApp"], .stApp {
+  --primary-color: #388bfd !important;
+}
+
+/* ---- Hide all Streamlit chrome globally ---- */
+#MainMenu,
+footer,
+[data-testid="stToolbar"],
+[data-testid="stDecoration"],
+[data-testid="stStatusWidget"],
+[data-testid="manage-app-button"],
+[data-testid="stAppDeployButton"],
+header [data-testid="stToolbar"],
+.stDeployButton,
+[kind="header"],
+button[title="View app in Streamlit Community Cloud"],
+button[aria-label="Open settings"],
+div[data-testid="collapsedControl"] {
+  display: none !important;
+  visibility: hidden !important;
+}
+/* Hide the theme toggle / three-dot menu that appears in the top-right */
+[data-testid="stHeader"] [data-testid="stToolbar"],
+[data-testid="stHeader"] button,
+[data-testid="stHeader"] .stToolbar {
+  display: none !important;
+}
+
+/* ---- Force dark theme — override Streamlit light/auto media queries ---- */
+html, body, [data-testid="stApp"], .stApp,
+[data-testid="stAppViewContainer"],
+[data-testid="stSidebar"],
+[data-testid="stMainContent"],
+[data-testid="stHeader"],
+[data-testid="stToolbar"],
+[data-testid="stDecoration"] {
+  color-scheme: dark !important;
+}
+
+/* ---- Kill all Streamlit red focus outlines globally ---- */
+*:focus, *:focus-visible, *:focus-within {
+  outline-color: var(--blue) !important;
+}
+[data-baseweb] *:focus,
+[data-baseweb] *:focus-visible {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* ---- Kill red border/shadow on focused inputs everywhere (dialogs, sidebar, main) ---- */
+input:focus, textarea:focus, select:focus,
+[data-baseweb="input"]:focus-within,
+[data-baseweb="base-input"]:focus-within,
+[data-baseweb="textarea"]:focus-within,
+[data-testid="stTextInput"] [data-baseweb="input"],
+[data-testid="stTextInput"] [data-baseweb="base-input"],
+[data-testid="stTextArea"] [data-baseweb="textarea"] {
+  border-color: var(--blue) !important;
+  box-shadow: 0 0 0 2px rgba(56,139,253,0.20) !important;
+  outline: none !important;
+}
+div[data-testid="stDialog"] input:focus,
+div[data-testid="stDialog"] textarea:focus,
+div[data-testid="stDialog"] [data-baseweb="input"]:focus-within,
+div[data-testid="stDialog"] [data-baseweb="base-input"]:focus-within {
+  border-color: var(--blue) !important;
+  box-shadow: 0 0 0 2px rgba(56,139,253,0.20) !important;
+  outline: none !important;
 }
 
 /* ---- Scrollbar ---- */
 ::-webkit-scrollbar           { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track     { background: transparent; }
-::-webkit-scrollbar-thumb     { background: rgba(204,0,0,0.40); border-radius: 6px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(204,0,0,0.65); }
+::-webkit-scrollbar-thumb     { background: rgba(56,139,253,0.35); border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(56,139,253,0.6); }
 
 /* ============================================================
    BASE / PAGE
@@ -50,10 +140,9 @@ html, body,
 .stApp {
   background-color: var(--bg-base) !important;
   color: var(--text-primary) !important;
-  font-family: 'Segoe UI', 'Inter', system-ui, sans-serif !important;
+  font-family: var(--font-ui) !important;
 }
 
-/* Force all stray white backgrounds dark */
 [data-testid="stAppViewContainer"] > section,
 [data-testid="stApp"],
 .main .block-container {
@@ -66,21 +155,21 @@ html, body,
 .custom-title {
   position: fixed;
   top: 0; left: 0; right: 0;
-  background: linear-gradient(110deg, #1a0000 0%, var(--red) 40%, #9a0000 100%);
+  background: linear-gradient(110deg, #0d1117 0%, #0f1f3d 45%, #161b22 100%);
   z-index: 999;
   display: flex;
   align-items: center;
-  padding: 0 26px;
-  gap: 14px;
-  height: 62px;
-  box-shadow: 0 2px 24px rgba(0,0,0,0.60), 0 1px 0 rgba(255,255,255,0.06);
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding: 0 28px;
+  gap: 12px;
+  height: 58px;
+  box-shadow: 0 1px 0 var(--border-blue), 0 2px 20px rgba(0,0,0,0.5);
+  border-bottom: 1px solid var(--border-blue);
 }
 
 .custom-title img {
-  height: 36px;
-  border-radius: 7px;
-  filter: drop-shadow(0 2px 5px rgba(0,0,0,0.4));
+  height: 32px;
+  border-radius: 6px;
+  filter: drop-shadow(0 2px 6px rgba(56,139,253,0.4));
   transition: var(--transition);
 }
 .custom-title img:hover { transform: scale(1.06); }
@@ -88,10 +177,9 @@ html, body,
 .custom-title h3 {
   color: #fff;
   margin: 0;
-  font-size: 17px;
-  font-weight: 700;
-  letter-spacing: 0.4px;
-  text-shadow: 0 1px 6px rgba(0,0,0,0.4);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
 }
 
 .stApp > header { background-color: transparent !important; }
@@ -99,83 +187,74 @@ html, body,
 /* ============================================================
    SIDEBAR
    ============================================================ */
-.stSidebar {
-  border-right: 1px solid var(--border-red);
-}
-
 [data-testid="stSidebar"] {
-  width: 400px !important;
-  top: 62px !important;
+  width: 380px !important;
+  top: 58px !important;
   left: 0; bottom: 0;
   overflow-y: auto;
-  background: linear-gradient(175deg, var(--sidebar-bg) 0%, var(--sidebar-bg2) 100%) !important;
+  background: var(--sidebar-bg) !important;
   padding-top: 10px !important;
   z-index: 998;
-  border-right: 1px solid var(--border-red);
+  border-right: 1px solid var(--border-blue);
 }
 
 [data-testid="stSidebar"]::-webkit-scrollbar       { width: 3px; }
-[data-testid="stSidebar"]::-webkit-scrollbar-thumb { background: rgba(204,0,0,0.45); border-radius: 3px; }
+[data-testid="stSidebar"]::-webkit-scrollbar-thumb { background: rgba(56,139,253,0.4); border-radius: 3px; }
 
-/* All sidebar text */
 [data-testid="stSidebar"] p,
 [data-testid="stSidebar"] span,
 [data-testid="stSidebar"] label,
 [data-testid="stSidebar"] .stMarkdown,
 [data-testid="stSidebar"] .stMarkdown p {
   color: var(--text-secondary) !important;
-  font-size: 13.5px;
+  font-size: 13px;
 }
 [data-testid="stSidebar"] strong,
 [data-testid="stSidebar"] b {
   color: var(--text-primary) !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
+}
+/* Sidebar text inputs / labels brighter */
+[data-testid="stSidebar"] label,
+[data-testid="stSidebar"] .stRadio label {
+  color: var(--text-secondary) !important;
 }
 [data-testid="stSidebar"] hr {
   border-color: var(--border) !important;
   margin: 8px 0 !important;
 }
 
-/* Sidebar section header caps */
 [data-testid="stSidebar"] .custom-radio-label {
   color: var(--text-muted) !important;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 1.2px;
+  letter-spacing: 1px;
   display: block;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
-/* Sidebar radio */
 [data-testid="stSidebar"] .stRadio > div > label {
   color: var(--text-secondary) !important;
   font-size: 13px !important;
 }
 [data-testid="stSidebar"] .stRadio input[type="radio"] {
-  accent-color: var(--red);
+  accent-color: var(--blue);
 }
 
-/* Sidebar bordered containers */
 [data-testid="stSidebar"] [data-testid="stVerticalBlockBorderWrapper"] {
   border: 1px solid var(--border) !important;
   border-radius: var(--radius-md) !important;
-  background: rgba(255,255,255,0.03) !important;
+  background: rgba(255,255,255,0.02) !important;
   padding: 12px 14px !important;
 }
 
-/* Sidebar expanders — dark */
 [data-testid="stSidebar"] [data-testid="stExpander"] {
-  background: rgba(255,255,255,0.03) !important;
+  background: rgba(255,255,255,0.02) !important;
   border: 1px solid var(--border) !important;
   border-radius: var(--radius-md) !important;
   box-shadow: none !important;
   margin-bottom: 10px;
-}
-[data-testid="stSidebar"] [data-testid="stExpander"]:hover {
-  background: rgba(255,255,255,0.05) !important;
-  transform: none !important;
-  box-shadow: none !important;
 }
 [data-testid="stSidebar"] [data-testid="stExpander"] > details > summary {
   color: var(--text-secondary) !important;
@@ -185,23 +264,22 @@ html, body,
   padding: 10px 14px !important;
 }
 
-/* Sidebar buttons */
 [data-testid="stSidebar"] [data-testid="stBaseButton-secondary"] button {
-  border: 1px solid var(--border-red) !important;
+  border: 1px solid var(--border) !important;
   color: var(--text-secondary) !important;
-  background: rgba(255,255,255,0.04) !important;
+  background: rgba(255,255,255,0.03) !important;
   font-weight: 500 !important;
   font-size: 13px !important;
   border-radius: var(--radius-sm) !important;
+  transition: var(--transition) !important;
 }
 [data-testid="stSidebar"] [data-testid="stBaseButton-secondary"] button:hover {
-  background: rgba(204,0,0,0.65) !important;
-  color: #fff !important;
-  border-color: var(--red) !important;
-  box-shadow: var(--shadow-red) !important;
+  background: var(--blue-muted) !important;
+  color: var(--blue-hover) !important;
+  border-color: var(--blue) !important;
+  box-shadow: var(--shadow-blue) !important;
 }
 
-/* Sidebar multiselect */
 [data-testid="stSidebar"] [data-testid="stMultiSelect"] > div {
   border: 1px solid var(--border-strong) !important;
   background: var(--bg-raised) !important;
@@ -211,9 +289,8 @@ html, body,
   color: var(--text-primary) !important;
 }
 
-/* Sidebar Home/Reset button row */
 [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] [data-testid="stBaseButton-secondary"] button {
-  font-size: 12.5px !important;
+  font-size: 12px !important;
   padding: 5px 12px !important;
 }
 
@@ -221,237 +298,481 @@ html, body,
    MAIN CONTENT
    ============================================================ */
 [data-testid="stMainContent"] {
-  margin-left: 445px !important;
-  padding: 28px 36px !important;
-  margin-top: 62px !important;
+  margin-left: 420px !important;
+  padding: 32px 52px !important;
+  margin-top: 58px !important;
   overflow-x: hidden !important;
   background-color: var(--bg-base) !important;
-  min-height: calc(100vh - 62px);
+  min-height: calc(100vh - 58px);
 }
 
-/* ============================================================
-   EXPANDERS (main content)
-   ============================================================ */
-[data-testid="stExpander"] {
-  background: var(--bg-surface) !important;
-  border: 1px solid var(--border-strong) !important;
-  border-radius: var(--radius-md) !important;
-  box-shadow: var(--shadow-sm) !important;
-  margin-bottom: 14px;
-  transition: box-shadow 0.22s ease, transform 0.18s ease;
-  overflow: hidden;
-}
-[data-testid="stExpander"]:hover {
-  box-shadow: var(--shadow-md) !important;
-  transform: translateY(-1px);
-}
-[data-testid="stExpander"] > details > summary {
-  padding: 14px 18px !important;
-  font-weight: 600 !important;
-  font-size: 14.5px !important;
-  color: var(--text-primary) !important;
-  border-bottom: 1px solid var(--border) !important;
-  letter-spacing: 0.2px;
-}
-[data-testid="stExpander"] [data-testid="stMarkdownContainer"] strong {
-  font-size: 14px !important;
-  color: var(--text-primary) !important;
-}
-/* Expander body */
-[data-testid="stExpander"] > details > div {
-  background: var(--bg-surface) !important;
-}
-
-/* ============================================================
-   MARKDOWN / TEXT
-   ============================================================ */
-[data-testid="stMarkdownContainer"] p,
-[data-testid="stMarkdownContainer"] li,
-[data-testid="stMarkdownContainer"] span {
-  color: var(--text-secondary) !important;
-  line-height: 1.7;
-}
-[data-testid="stMarkdownContainer"] strong,
-[data-testid="stMarkdownContainer"] b {
-  color: var(--text-primary) !important;
-}
-[data-testid="stMarkdownContainer"] h1,
-[data-testid="stMarkdownContainer"] h2,
-[data-testid="stMarkdownContainer"] h3 {
-  color: var(--text-primary) !important;
+/* Layout: wide mode, remove default Streamlit padding */
+.block-container {
+  padding-top: 1rem !important;
+  max-width: 100% !important;
 }
 
 /* ============================================================
    BUTTONS
    ============================================================ */
+/* Secondary / default */
 [data-testid="stBaseButton-secondary"] button {
-  border: 1px solid var(--border-red);
-  border-radius: var(--radius-sm);
-  color: #e8e8ee;
-  background: rgba(255,255,255,0.05);
-  padding: 6px 18px;
-  font-weight: 600;
-  font-size: 13.5px;
-  transition: var(--transition);
-  box-shadow: none;
+  background: var(--bg-raised) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-strong) !important;
+  border-radius: var(--radius-sm) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  transition: var(--transition) !important;
+  min-height: 38px !important;
 }
 [data-testid="stBaseButton-secondary"] button:hover {
-  background: var(--red);
-  border-color: var(--red);
-  color: #fff;
-  box-shadow: var(--shadow-red);
-  transform: translateY(-1px);
-}
-[data-testid="stBaseButton-secondary"] button:active {
-  transform: translateY(0);
-  box-shadow: none;
+  background: var(--blue-muted) !important;
+  border-color: var(--blue) !important;
+  color: var(--blue-hover) !important;
 }
 
-[data-testid="stDownloadButton"] button {
-  border: 1px solid var(--border-red);
-  border-radius: var(--radius-sm);
-  transition: var(--transition);
+/* Primary — cover every selector variant Streamlit may emit */
+[data-testid="stBaseButton-primary"] button,
+[data-testid="stBaseButton-primary"] > button,
+button[kind="primary"],
+.stButton > button[kind="primary"],
+.stButton button[data-baseweb="button"][kind="primary"],
+[data-testid="stBaseButton-primary"],
+div[data-testid="stBaseButton-primary"] button {
+  background: var(--action) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: var(--radius-sm) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.02em !important;
+  transition: var(--transition) !important;
+  min-height: 38px !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.25) !important;
+}
+[data-testid="stBaseButton-primary"] button:hover,
+[data-testid="stBaseButton-primary"] > button:hover,
+button[kind="primary"]:hover,
+.stButton button[data-baseweb="button"][kind="primary"]:hover {
+  background: var(--action-hover) !important;
+  box-shadow: var(--action-shadow) !important;
+  transform: translateY(-1px);
+}
+
+/* Kill Streamlit's red/coral default inline styles on any button */
+button[style*="background-color: rgb(255"],
+button[style*="background-color: rgba(255"] {
+  background: var(--action) !important;
+}
+
+/* ── Sidebar nav buttons (helper cards) ── */
+[data-testid="stSidebar"] [data-testid="stBaseButton-primary"] button,
+[data-testid="stSidebar"] [data-testid="stBaseButton-secondary"] button {
+  text-align: center !important;
+  justify-content: center !important;
+  padding: 12px 16px !important;
+  min-height: 44px !important;
+  border-radius: 10px !important;
+  line-height: 1.4 !important;
+  white-space: nowrap !important;
+  font-size: 13.5px !important;
+  letter-spacing: 0.01em !important;
+}
+
+/* Selected / primary in sidebar */
+[data-testid="stSidebar"] [data-testid="stBaseButton-primary"] button,
+[data-testid="stSidebar"] [data-testid="stBaseButton-primary"] > button,
+[data-testid="stSidebar"] button[kind="primary"],
+[data-testid="stSidebar"] div[data-testid="stBaseButton-primary"] button {
+  background: var(--action) !important;
+  color: #ffffff !important;
+  border: none !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 10px rgba(56,139,253,0.30) !important;
+}
+[data-testid="stSidebar"] [data-testid="stBaseButton-primary"] button:hover,
+[data-testid="stSidebar"] [data-testid="stBaseButton-primary"] > button:hover,
+[data-testid="stSidebar"] button[kind="primary"]:hover {
+  background: var(--action-hover) !important;
+  box-shadow: var(--action-shadow) !important;
+}
+
+/* Unselected / secondary in sidebar */
+[data-testid="stSidebar"] [data-testid="stBaseButton-secondary"] button {
+  background: rgba(255,255,255,0.03) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-strong) !important;
+  font-weight: 500 !important;
+}
+[data-testid="stSidebar"] [data-testid="stBaseButton-secondary"] button:hover {
+  background: rgba(56,139,253,0.09) !important;
+  border-color: rgba(56,139,253,0.35) !important;
+  color: var(--blue-hover) !important;
+}
+
+/* Home / Reset small buttons — override back to compact size */
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"] [data-testid="stBaseButton-secondary"] button,
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"] [data-testid="stBaseButton-primary"] button {
+  min-height: 36px !important;
+  padding: 5px 10px !important;
+  text-align: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  font-size: 12.5px !important;
 }
 
 /* ============================================================
    INPUTS
    ============================================================ */
-.stTextArea textarea {
-  background: var(--bg-raised) !important;
-  color: var(--text-primary) !important;
-  border: 1px solid var(--border-strong) !important;
-  border-radius: var(--radius-md) !important;
-  font-size: 14px !important;
-  line-height: 1.6 !important;
-  caret-color: var(--red);
-  transition: var(--transition) !important;
-}
-.stTextArea textarea:focus {
-  border-color: var(--red) !important;
-  box-shadow: 0 0 0 3px var(--red-glow) !important;
-}
-.stTextArea textarea::placeholder { color: var(--text-muted) !important; }
-
-.stTextInput input {
+.stTextInput input,
+.stTextArea textarea,
+[data-testid="stTextInput"] input,
+[data-testid="stTextArea"] textarea {
   background: var(--bg-raised) !important;
   color: var(--text-primary) !important;
   border: 1px solid var(--border-strong) !important;
   border-radius: var(--radius-sm) !important;
-  caret-color: var(--red);
-  transition: var(--transition) !important;
-}
-.stTextInput input:focus {
-  border-color: var(--red) !important;
-  box-shadow: 0 0 0 3px var(--red-glow) !important;
-}
-.stTextInput input::placeholder { color: var(--text-muted) !important; }
-
-/* Label above inputs */
-.stTextArea label,
-.stTextInput label,
-[data-testid="stWidgetLabel"] {
-  color: var(--text-secondary) !important;
   font-size: 13px !important;
-  font-weight: 600 !important;
-}
-
-/* ============================================================
-   CHAT INPUT
-   ============================================================ */
-[data-testid="stChatInput"] {
-  background: var(--bg-raised) !important;
-  border: 1px solid var(--border-strong) !important;
-  border-radius: var(--radius-lg) !important;
-  box-shadow: var(--shadow-sm) !important;
+  font-family: var(--font-ui) !important;
+  caret-color: var(--blue) !important;
   transition: var(--transition) !important;
 }
-[data-testid="stChatInput"]:focus-within {
-  border-color: var(--red) !important;
-  box-shadow: 0 0 0 3px var(--red-glow) !important;
+.stTextInput input:focus,
+.stTextArea textarea:focus {
+  border-color: var(--blue) !important;
+  box-shadow: 0 0 0 3px rgba(56,139,253,0.15) !important;
+  outline: none !important;
 }
-[data-testid="stChatInput"] textarea {
-  color: var(--text-primary) !important;
-  background: transparent !important;
+.stTextInput label,
+.stTextArea label,
+.stSelectbox label {
+  color: var(--text-secondary) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
 }
 
 /* ============================================================
    MULTISELECT
    ============================================================ */
-[data-testid="stMultiSelect"] > div {
+[data-testid="stMultiSelect"] > div > div {
   background: var(--bg-raised) !important;
   border: 1px solid var(--border-strong) !important;
   border-radius: var(--radius-sm) !important;
 }
-[data-testid="stMultiSelect"] span { color: #1a1a1a !important; }
-[data-testid="stMultiSelect"] input { color: var(--text-primary) !important; }
+[data-testid="stMultiSelect"] span[data-baseweb="tag"] {
+  background: var(--blue-muted) !important;
+  color: var(--blue-hover) !important;
+  border: 1px solid var(--border-blue) !important;
+  border-radius: 4px !important;
+  font-size: 12px !important;
+}
 
 /* ============================================================
-   ALERT BOXES
+   EXPANDERS
    ============================================================ */
-[data-testid="stAlert"] {
+[data-testid="stExpander"] {
   background: var(--bg-surface) !important;
+  border: 1px solid var(--border) !important;
   border-radius: var(--radius-md) !important;
-  border-left-width: 3px !important;
-  box-shadow: none !important;
 }
-[data-testid="stAlert"] p { color: var(--text-secondary) !important; }
+[data-testid="stExpander"] summary {
+  color: var(--text-primary) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  padding: 10px 14px !important;
+}
+[data-testid="stExpander"] summary:hover {
+  background: var(--bg-hover) !important;
+}
+[data-testid="stExpander"] [data-testid="stMarkdownContainer"] strong {
+  font-size: 13px !important;
+  color: var(--text-primary) !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+
+/* ============================================================
+   BORDERED CONTAINERS
+   ============================================================ */
+[data-testid="stVerticalBlockBorderWrapper"] {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 4px 0 !important;
+}
+
+/* ============================================================
+   CODE
+   ============================================================ */
+code, pre {
+  font-family: var(--font-mono) !important;
+  font-size: 12px !important;
+  background: var(--bg-hover) !important;
+  color: #79c0ff !important;
+  border-radius: 4px !important;
+  border: 1px solid var(--border) !important;
+}
+
+/* ============================================================
+   MARKDOWN
+   ============================================================ */
+.stMarkdown, [data-testid="stMarkdownContainer"] {
+  color: var(--text-primary) !important;
+  font-size: 14px !important;
+  line-height: 1.65 !important;
+}
+.stMarkdown h1,.stMarkdown h2,.stMarkdown h3,
+.stMarkdown h4,.stMarkdown h5 {
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+  margin-top: 20px;
+}
+.stMarkdown a { color: var(--blue-hover) !important; text-decoration: none !important; }
+.stMarkdown a:hover { text-decoration: underline !important; }
+
+/* ============================================================
+   ALERTS
+   ============================================================ */
+[data-testid="stAlert"] { border-radius: var(--radius-sm) !important; font-size: 13px !important; }
+.stSuccess { background: var(--green-muted) !important; border: 1px solid rgba(63,185,80,0.4) !important; color: var(--green) !important; }
+.stWarning { background: rgba(56,139,253,0.08) !important; border: 1px solid rgba(56,139,253,0.35) !important; color: #58a6ff !important; }
+.stError   { background: rgba(163,113,247,0.08) !important; border: 1px solid rgba(163,113,247,0.35) !important; color: #b88af9 !important; }
+.stInfo    { background: var(--blue-muted) !important; border: 1px solid var(--border-blue) !important; color: #79c0ff !important; }
 
 /* ============================================================
    SPINNER
    ============================================================ */
-[data-testid="stSpinner"] > div { color: var(--red) !important; }
+.stSpinner > div { border-top-color: var(--blue) !important; }
 
 /* ============================================================
-   RADIO (main content)
-   ============================================================ */
-.stRadio > div > label  { color: var(--text-secondary) !important; }
-.stRadio input[type="radio"] { accent-color: var(--red); }
-
-/* ============================================================
-   UTILITY
-   ============================================================ */
-.right-aligned { text-align: right; padding-bottom: 12px; }
-
-.my-contanier {
-  background: var(--bg-surface);
-  padding: 18px;
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border);
-}
-
-/* ============================================================
-   DIALOG SIZING
+   DIALOG
    ============================================================ */
 div[data-testid="stDialog"] div[role="dialog"] {
   background: var(--bg-surface) !important;
   border: 1px solid var(--border-strong) !important;
+  border-radius: var(--radius-lg) !important;
   color: var(--text-primary) !important;
 }
-div[data-testid="stDialog"] div[role="dialog"]:has(div:contains("User Confirmation")) {
-  width: 35vw; height: 20vh;
+
+/* ============================================================
+   MISC
+   ============================================================ */
+hr { border-color: var(--border) !important; margin: 16px 0 !important; }
+
+[data-testid="stFeedback"] button { filter: grayscale(0.5) !important; transition: filter 0.15s !important; }
+[data-testid="stFeedback"] button:hover { filter: none !important; }
+
+.welcome-banner {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.7;
 }
-div[data-testid="stDialog"] div[role="dialog"]:has(div:contains("authenticate")) {
-  width: 36vw; height: 62vh;
+.welcome-banner h4 {
+  margin: 0 0 6px;
+  color: var(--text-primary) !important;
+  font-size: 15px !important;
+  border: none !important;
+}
+
+.my-container {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+}
+
+.right-aligned { text-align: right; padding-bottom: 12px; }
+
+iframe { border: none !important; }
+
+/* ============================================================
+   RADIO — sidebar accent
+   ============================================================ */
+[data-testid="stSidebar"] .stRadio input[type="radio"] {
+  accent-color: var(--blue) !important;
+}
+[data-testid="stSidebar"] .stRadio > div > label {
+  color: var(--text-secondary) !important;
+  font-size: 13px !important;
 }
 
 /* ============================================================
-   FADE-IN ANIMATION
+   CHAT / AGENT DIALOG — full styles live in agent_chat.css
    ============================================================ */
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-[data-testid="stMainContent"] > div:first-child {
-  animation: fadeInUp 0.32s ease;
+
+/* ============================================================
+   EXPANDERS — main content
+   ============================================================ */
+[data-testid="stMainContent"] [data-testid="stExpander"] {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-md) !important;
+  margin-bottom: 12px !important;
 }
 
 /* ============================================================
-   SELECT / DROPDOWN
+   CHAT INPUT
    ============================================================ */
-[data-testid="stSelectbox"] > div {
+/* Shrink the top margin so the chat bar doesn't float in a sea of whitespace */
+[data-testid="stChatInputContainer"],
+[data-testid="stBottom"],
+[data-testid="stBottom"] > div {
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+}
+
+/* Outer container — kill any red focus ring Streamlit sets */
+[data-testid="stChatInput"],
+[data-testid="stChatInput"] > div,
+[data-testid="stChatInput"] > div > div {
+  border-color: var(--border-strong) !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+[data-testid="stChatInput"]:focus-within,
+[data-testid="stChatInput"] > div:focus-within {
+  border-color: var(--blue) !important;
+  box-shadow: 0 0 0 2px rgba(56,139,253,0.20) !important;
+}
+[data-testid="stChatInput"] textarea {
   background: var(--bg-raised) !important;
-  border: 1px solid var(--border-strong) !important;
-  border-radius: var(--radius-sm) !important;
   color: var(--text-primary) !important;
+  border: none !important;
+  border-radius: var(--radius-sm) !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  padding: 10px 14px !important;
+}
+[data-testid="stChatInput"] textarea:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+[data-testid="stChatInputSubmitButton"] button {
+  background: var(--action) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  width: 36px !important;
+  height: 36px !important;
+}
+
+/* ============================================================
+   SELECT / MULTISELECT dropdown
+   ============================================================ */
+[data-baseweb="popover"] [role="option"]:hover {
+  background: var(--blue-muted) !important;
+}
+[data-baseweb="select"] div {
+  background: var(--bg-raised) !important;
+  border-color: var(--border-strong) !important;
+  color: var(--text-primary) !important;
+}
+
+/* ============================================================
+   DASHBOARD GRADIENT BACKGROUND
+   ============================================================ */
+[data-testid="stAppViewContainer"].gradient-bg,
+.gradient-bg [data-testid="stAppViewContainer"] {
+  background:
+    radial-gradient(ellipse 55% 45% at 5% 10%, rgba(56,139,253,0.09) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 35% at 95% 90%, rgba(163,113,247,0.07) 0%, transparent 65%),
+    var(--bg-base) !important;
+}
+
+/* ============================================================
+   SIDEBAR LABELS & BADGES
+   ============================================================ */
+.sb-section-label {
+  color: var(--text-muted) !important;
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1.1px !important;
+  margin: 14px 0 6px !important;
+  padding: 0 2px !important;
+}
+
+.sb-user-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(63, 185, 80, 0.1);
+  border: 1px solid rgba(63, 185, 80, 0.3);
+  border-radius: 20px;
+  color: var(--green) !important;
+  font-size: 11.5px !important;
+  font-weight: 500;
+  padding: 4px 10px;
+  margin: 8px 0 12px !important;
+  width: fit-content;
+}
+
+.sb-jira-promo {
+  background: rgba(18, 184, 134, 0.06);
+  border: 1px solid rgba(18, 184, 134, 0.20);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin: 14px 0 8px !important;
+  font-size: 12px !important;
+  color: var(--text-secondary) !important;
+  line-height: 1.55;
+}
+.sb-jira-promo b {
+  color: #12b886 !important;
+  font-weight: 600;
+}
+
+/* ============================================================
+   LANDING PAGE — CTA buttons override (not in sidebar)
+   Force both primary and secondary CTAs to the same height/padding
+   ============================================================ */
+[data-testid="stMainContent"]:not([data-testid="stSidebar"] *)
+  [data-testid^="stBaseButton"] button {
+  height: 46px !important;
+  min-height: 46px !important;
+  padding: 0 22px !important;
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.stApp > [data-testid="stAppViewContainer"] > section[data-testid="stMainContent"]
+  [data-testid="stBaseButton-primary"] button {
+  background: var(--action) !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+.stApp > [data-testid="stAppViewContainer"] > section[data-testid="stMainContent"]
+  [data-testid="stBaseButton-primary"] button:hover {
+  background: var(--action-hover) !important;
+  box-shadow: var(--action-shadow) !important;
+}
+
+/* ============================================================
+   JIRA BUTTON — teal/green accent
+   Scoped <style> injected via st.markdown with marker ID handles
+   the actual targeting. This rule is a belt-and-suspenders fallback
+   using :has() on the .sb-jira-promo sibling.
+   ============================================================ */
+[data-testid="stSidebar"] [data-testid="stVerticalBlock"]:has(.sb-jira-promo)
+  [data-testid="stBaseButton-primary"] button {
+  background: var(--jira-action) !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 2px 10px rgba(18, 184, 134, 0.25) !important;
+  font-weight: 600 !important;
+}
+[data-testid="stSidebar"] [data-testid="stVerticalBlock"]:has(.sb-jira-promo)
+  [data-testid="stBaseButton-primary"] button:hover {
+  background: var(--jira-action-hover) !important;
+  box-shadow: var(--jira-action-shadow) !important;
 }

@@ -2,79 +2,61 @@
    Agent Chat Dialog — Dark Theme
    ============================================================ */
 
-.chat-dialog {
-  max-height: 70vh;
-  overflow-y: auto;
-  padding-right: 6px;
-  scroll-behavior: smooth;
-  background: transparent;
-}
-
-.chat-container {
-  display: flex;
-  flex-direction: column;
-  margin: 10px 0;
-  animation: chatFadeIn 0.26s ease both;
-}
-
-@keyframes chatFadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ---- Name label ---- */
+/* ---- Name / agent badge ---- */
 .name-label {
-  font-size: 0.72rem;
+  font-size: 0.70rem;
   font-weight: 700;
-  margin-bottom: 5px;
-  color: #5c5e6e;
-  letter-spacing: 0.8px;
+  margin-bottom: 4px;
+  letter-spacing: 1.0px;
   text-transform: uppercase;
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
 }
 
-/* ---- Base bubble ---- */
-.chat-bubble {
-  padding: 11px 15px;
-  border-radius: 16px;
-  margin: 2px 0;
-  max-width: 80%;
-  word-wrap: break-word;
-  display: inline-block;
-  font-size: 13.5px;
-  line-height: 1.6;
-  transition: transform 0.15s ease;
+/* ---- Markdown rendered inside the dialog ---- */
+div[data-testid="stDialog"] .stMarkdown,
+div[data-testid="stDialog"] [data-testid="stMarkdownContainer"] {
+  font-size: 13.5px !important;
+  line-height: 1.65 !important;
+  color: #c9d1d9 !important;
 }
 
-.chat-bubble:hover { transform: scale(1.008); }
-
-/* ---- Agent bubble (left) ---- */
-.agent-bubble {
-  background: #1f2026;
-  color: #c8cce0;
-  text-align: left;
-  border-top-left-radius: 4px;
-  border: 1px solid rgba(255,255,255,0.08);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.30);
-  align-self: flex-start;
+/* Code blocks inside agent dialog */
+div[data-testid="stDialog"] pre,
+div[data-testid="stDialog"] code {
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace !important;
+  font-size: 12px !important;
+  background: #0d1117 !important;
+  border: 1px solid rgba(56,139,253,0.18) !important;
+  border-radius: 6px !important;
+  color: #79c0ff !important;
 }
 
-/* ---- User bubble (right) ---- */
-.user-bubble {
-  background: #cc0000;
-  color: #fff;
-  text-align: right;
-  margin-left: auto;
-  border-top-right-radius: 4px;
-  box-shadow: 0 3px 12px rgba(204,0,0,0.40);
-  align-self: flex-end;
+div[data-testid="stDialog"] pre {
+  padding: 12px 16px !important;
+  overflow-x: auto !important;
+  max-height: 360px !important;
 }
 
-/* ---- Chat box container ---- */
-.chat-box {
-  background: #17181c;
-  padding: 22px;
-  border-radius: 14px;
-  margin-top: 16px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.50);
-  border: 1px solid rgba(255,255,255,0.07);
+/* Headings inside agent messages */
+div[data-testid="stDialog"] .stMarkdown h1,
+div[data-testid="stDialog"] .stMarkdown h2,
+div[data-testid="stDialog"] .stMarkdown h3 {
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: #e6edf3 !important;
+  border-bottom: 1px solid rgba(255,255,255,0.07) !important;
+  padding-bottom: 4px !important;
+  margin: 12px 0 6px !important;
+}
+
+/* Lists inside agent messages */
+div[data-testid="stDialog"] .stMarkdown ul,
+div[data-testid="stDialog"] .stMarkdown ol {
+  padding-left: 20px !important;
+  margin: 6px 0 !important;
+}
+
+div[data-testid="stDialog"] .stMarkdown li {
+  margin-bottom: 3px !important;
+  font-size: 13.5px !important;
 }

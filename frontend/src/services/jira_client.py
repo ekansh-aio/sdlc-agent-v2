@@ -11,7 +11,7 @@ class JiraClient:
         """
         Initialize Jira client with base URL and auth
         """
-        self.base_url = base_url
+        self.base_url = base_url.rstrip("/")
         self.user = None
         self.password = None
         self.basic_auth = None
@@ -102,26 +102,19 @@ class JiraClient:
     def fetch_issue_details(self, jira_id):
         """Fetch issue details from Jira."""
         issue_url = f"{self.base_url}/rest/api/2/issue/{jira_id}"
-        print("issue_url: ", issue_url)
         response = requests.get(issue_url, headers=self.headers, verify=False)
-        print("response: ", response.status_code)
         if response.status_code == 200:
-            print("response: ", response.status_code)
             issue_data = response.json()
             project_name = issue_data["fields"]["project"]["name"]
             description = issue_data["fields"].get("description", "No Description Available")
             summary = issue_data["fields"]["summary"]
-            st.write(f"🔹 Project: {project_name}")
-            st.write(f"🔹 Summary: {summary}")
-            st.write(f"🔹 Description: {description}")
-            print("tet")
-            return  issue_data["key"],  summary, description
+            logging.info(f"Fetched issue {jira_id}: {summary}")
+            return issue_data["key"], summary, description
         elif response.status_code == 401:
-            print("Authentication failed: Invalid credentials or missing permissions.")
+            logging.warning(f"Authentication failed fetching {jira_id}")
         else:
-            print(f"Request failed ({response.status_code}): {response.text}")
-
-        return  None, None, None
+            logging.error(f"Request failed ({response.status_code}): {response.text}")
+        return None, None, None
 
     def update_jira_issue(self,headers,jira_id, agent_title, agent_description):
         """Update the Jira issue with the refined title and description."""
@@ -159,7 +152,7 @@ class JiraClient:
             # Store session info and cookies
             self.session_info = response.json()['session']
             self.cookies = {'JSESSIONID': self.session_info['value']}
-            logging.info("Session created:", self.session_info)
+            logging.info(f"Session created: {self.session_info}")
             return self.cookies  # Fixed: return cookies instead of headers
         else:
             logging.info("Failed to create session:", response.text)
