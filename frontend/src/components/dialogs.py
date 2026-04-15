@@ -63,60 +63,119 @@ def jira_auth_confirm(jira, JIRA_ENDPOINT):
         st.session_state.jira_user_authenticated = False
     if "jira_auth_popup_actioned" not in st.session_state:
         st.session_state.jira_auth_popup_actioned = False
+
     st.markdown("""
     <style>
-        .custom-title {
-            font-size: 32px;
-            color: white;
-            background-color: red;
-            padding: 10px 20px;
-            border-radius: 10px;
+        /* ---- Dark auth page ---- */
+        body, .stApp, [data-testid="stAppViewContainer"] {
+            background-color: #0d0e10 !important;
+        }
+        .auth-hero {
+            background: #17181c;
+            border: 1px solid rgba(255,255,255,0.07);
+            border-top: 3px solid #cc0000;
+            border-radius: 18px;
+            padding: 40px 36px 32px;
             text-align: center;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.55);
+            margin-bottom: 8px;
+        }
+        .auth-hero-icon {
+            width: 60px; height: 60px; border-radius: 50%;
+            background: rgba(204,0,0,0.12);
+            border: 1.5px solid rgba(204,0,0,0.35);
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 26px; margin-bottom: 18px;
+        }
+        .auth-hero h2 {
+            color: #f0f1f5;
+            font-size: 22px;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            letter-spacing: 0.3px;
+        }
+        .auth-hero p {
+            color: #6b7090;
+            font-size: 13.5px;
+            margin: 0;
+            line-height: 1.6;
+        }
+        .auth-divider {
+            border: none;
+            border-top: 1px solid rgba(255,255,255,0.07);
+            margin: 18px 0;
+        }
+        .auth-form-card {
+            background: #1f2026;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            padding: 22px 24px 18px;
+            margin-top: 10px;
+        }
+        /* Override Streamlit input fields inside auth card */
+        .auth-form-card input {
+            background: #26272d !important;
+            color: #f0f1f5 !important;
+            border: 1px solid rgba(255,255,255,0.12) !important;
+            border-radius: 8px !important;
+        }
+        .auth-form-card label { color: #9b9caa !important; font-size: 13px !important; }
+        div[data-testid="stBaseButton-secondary"] button {
+            border-radius: 9px !important;
+            font-weight: 600 !important;
+            transition: all 0.22s ease !important;
         }
     </style>
-            """, unsafe_allow_html=True)
-    st.markdown("<h3 class='custom-title' style='color: white;'>Welcome to AI Helpers for QE</h3>", unsafe_allow_html=True)
-    st.markdown("""------ """)
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="auth-hero">
+        <div class="auth-hero-icon">🤖</div>
+        <h2>AI Helpers for <span style="color:#cc0000;">Quality Engineering</span></h2>
+        <p>Intelligent automation for your QE workflows — powered by AI agents</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("<hr class='auth-divider'>", unsafe_allow_html=True)
+
     col1, col2, col3 = st.columns([1, 4, 1])
-    
-   
+
     with col2:
         left_btn, right_btn = st.columns(2)
-    #col = st.columns(2)
 
         with left_btn:
-            if st.button("**Skip Jira Authentication**",use_container_width=True):
+            if st.button("Continue without Jira", use_container_width=True):
                 st.session_state.jira_user_authenticated = False
                 st.session_state.jira_auth_popup_actioned = True
                 st.session_state.show_jira_login = False
                 st.rerun()
 
         with right_btn:
-            if st.button("**Authenticate with Jira**",use_container_width=True):
+            if st.button("🔐 Connect to Jira", use_container_width=True):
                 st.session_state.show_jira_login = True
 
     # Show input fields only if Authenticate was clicked
     if st.session_state.show_jira_login:
-        with st.container(border=True):
-            user = st.text_input("Jira Username", key="jira_user_input")
-            password = st.text_input("Password", type="password", key="jira_pass_input")
+        with col2:
+            st.markdown("<div class='auth-form-card'>", unsafe_allow_html=True)
+            user = st.text_input("Jira Username", key="jira_user_input", placeholder="Enter your Jira username")
+            password = st.text_input("Password", type="password", key="jira_pass_input", placeholder="Enter your password")
 
-            if st.button("Submit Credentials"):
+            if st.button("Connect to Jira", use_container_width=True):
                 if user and password:
                     jira.set_credentials(user, password)
                     try:
                         if not jira.authenticate_user():
                             st.session_state.jira_user_authenticated = False
                             st.session_state.jira_auth_popup_actioned = False
-                            st.error("❌ Invalid credentials.")
+                            st.error("❌ Invalid credentials. Please try again.")
                         else:
-                            # Store credentials for Basic Auth instead of trying session auth
                             st.session_state.jira_username = user.strip()
                             st.session_state.jira_password = password
                             st.session_state.logged_in_user = user.strip()
                             st.session_state.jira_user_authenticated = True
                             st.session_state.jira_auth_popup_actioned = True
-                            st.success("✅ Authentication successful!")
+                            st.success("✅ Connected successfully!")
                             print("Jira Basic Auth configured for user: ", user.strip())
                             time.sleep(1)
                             st.rerun()
@@ -124,6 +183,7 @@ def jira_auth_confirm(jira, JIRA_ENDPOINT):
                         st.error(f"Authentication failed: {str(e)}")
                 else:
                     st.warning("Please enter both username and password.")
+            st.markdown("</div>", unsafe_allow_html=True)
 
     # Admin Panel To upload File in Azure Blob Storage                 
     #st.markdown("""------ """)

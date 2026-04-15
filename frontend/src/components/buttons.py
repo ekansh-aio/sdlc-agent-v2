@@ -8,32 +8,44 @@ import streamlit as st
 def button_container(key, label, type):
     is_selected = st.session_state.get(f"{type}_{key}_selected", False)
 
-    bg_color = "rgb(240, 160, 160)" if is_selected else "white"
-    text_color = "white" if is_selected else "black"
-    border_width = ".3em" if is_selected else ".1em"
-    font_weight = "bold" if is_selected else "normal"
+    bg_color    = "#cc0000" if is_selected else "rgba(255,255,255,0.04)"
+    text_color  = "#ffffff" if is_selected else "#a0a4b4"
+    border      = "1px solid #cc0000" if is_selected else "1px solid rgba(204,0,0,0.38)"
+    font_weight = "700" if is_selected else "500"
+    shadow      = "0 3px 12px rgba(204,0,0,0.35)" if is_selected else "none"
 
     with stylable_container(
         key=key,
         css_styles=[
             f"""
             button {{
-                border: solid {border_width} red;
-                border-radius: 10px;
+                border: {border};
+                border-radius: 8px;
                 color: {text_color};
-                background-color: {bg_color};
-                padding: 5px 15px;
+                background: {bg_color};
+                padding: 7px 16px;
                 font-weight: {font_weight};
-                margin: -2px 0;
-                transition: all 0.3s ease-in-out;
+                font-size: 13px;
+                margin: 1px 0;
+                transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: {shadow};
+                letter-spacing: 0.2px;
+                width: 100%;
             }}
             """,
             """
             button:hover {
-                background-color: white;
-                border: solid .2em red;
-                color: black;
-                transform: scale(1.02);
+                background: #cc0000 !important;
+                border: 1px solid #cc0000 !important;
+                color: #ffffff !important;
+                box-shadow: 0 4px 16px rgba(204,0,0,0.40) !important;
+                transform: translateY(-1px);
+            }
+            """,
+            """
+            button:active {
+                transform: translateY(0) !important;
+                box-shadow: none !important;
             }
             """
         ],
@@ -112,42 +124,68 @@ def clipboard_button(escaped_response):
                     <html>
                     <head>
                         <style>
-                            .st-button-like {{
-                                background-color: rgb(247, 247, 247);
-                                border: 1px solid #ddd;
-                                border-radius: 10px 10px 10px 10px;
-                                padding: 0.65rem 0.8rem;
-                                font-size: 0.85rem;
-                                font-family: "Source Sans Pro", sans-serif;
+                            * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+                            body {{ background: transparent; display: flex; align-items: center; }}
+                            .copy-btn {{
+                                display: inline-flex;
+                                align-items: center;
+                                gap: 6px;
+                                background: rgba(255,255,255,0.05);
+                                border: 1px solid rgba(204,0,0,0.50);
+                                border-radius: 8px;
+                                padding: 6px 14px;
+                                font-size: 12.5px;
+                                font-weight: 600;
+                                font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
+                                color: #b0b4c8;
                                 cursor: pointer;
-                                box-shadow: rgba(0, 0, 0, 0.05) 0px 1px 3px;
-                                transition: background-color 0.2s ease;
-                                margin-top: -15px;
-                                margin-left: -10px;                                        
+                                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                                white-space: nowrap;
                             }}
-                            .st-button-like:hover {{
-                                border: 1px solid #ff4d4f;
-                                color: #ff4d4f;
-                            }}                                                                                        
+                            .copy-btn:hover {{
+                                background: #cc0000;
+                                border-color: #cc0000;
+                                color: white;
+                                box-shadow: 0 4px 14px rgba(204,0,0,0.38);
+                                transform: translateY(-1px);
+                            }}
+                            .copy-btn:active {{
+                                transform: translateY(0);
+                                box-shadow: none;
+                            }}
+                            .copy-btn.copied {{
+                                background: rgba(74,222,128,0.15);
+                                border-color: rgba(74,222,128,0.40);
+                                color: #4ade80;
+                            }}
                         </style>
-                                                                
                     </head>
                     <body>
-                        <button class="st-button-like" onclick="copyToClipboard()">📋 Copy Response</button>
+                        <button class="copy-btn" id="copyBtn" onclick="copyToClipboard()">
+                            📋 Copy
+                        </button>
                         <script>
                             function copyToClipboard() {{
                                 const text = {escaped_response};
+                                const btn = document.getElementById('copyBtn');
                                 navigator.clipboard.writeText(text).then(function() {{
-                                    alert("Copied to clipboard!");
+                                    btn.classList.add('copied');
+                                    btn.innerHTML = '✅ Copied!';
+                                    setTimeout(function() {{
+                                        btn.classList.remove('copied');
+                                        btn.innerHTML = '📋 Copy';
+                                    }}, 2000);
                                 }}, function(err) {{
-                                    alert("Failed to copy text.");
-                                    console.error(err);
+                                    btn.innerHTML = '❌ Failed';
+                                    setTimeout(function() {{
+                                        btn.innerHTML = '📋 Copy';
+                                    }}, 2000);
                                 }});
                             }}
                         </script>
                     </body>
                     </html>
-                    """, height=150)
+                    """, height=50)
 
 def reset_app_state(include_auth=False):
     st.session_state.selected_helper = None

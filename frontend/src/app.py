@@ -60,7 +60,7 @@ def placeholder_for_agent(payload=None):
                 time.sleep(20)
         return result
 
-    except:
+    except Exception as e:
         return f"Exception occured: {str(e)}"
 
 def log_into_pgdb(jira_id, original_description, new_content):
@@ -258,25 +258,88 @@ if st.session_state.jira_auth_popup_actioned:
     #     st.session_state.welcome_message = True
 
     if not st.session_state.get("welcome_message"):
-            st.markdown(f"<h4>Welcome, \n\n Please select one of the listed AI Helpers for QE in sidebar to proceed.</h4>", unsafe_allow_html=True)
+            st.markdown("""
+            <div style="
+                background: #17181c;
+                border: 1px solid rgba(255,255,255,0.08);
+                border-top: 3px solid #cc0000;
+                border-radius: 16px;
+                padding: 48px 44px 40px;
+                box-shadow: 0 8px 40px rgba(0,0,0,0.50);
+                margin: 32px auto;
+                max-width: 620px;
+                text-align: center;
+            ">
+                <div style="
+                    width:64px; height:64px; border-radius:50%;
+                    background: rgba(204,0,0,0.12);
+                    border: 1.5px solid rgba(204,0,0,0.35);
+                    display:inline-flex; align-items:center; justify-content:center;
+                    font-size:28px; margin-bottom:20px;
+                ">🤖</div>
+                <h2 style="
+                    color: #f0f1f5;
+                    margin: 0 0 12px 0;
+                    font-size: 22px;
+                    font-weight: 700;
+                    letter-spacing: 0.3px;
+                ">Welcome to <span style='color:#cc0000;'>AI Helpers</span> for QE</h2>
+                <p style="
+                    color: #7a7f94;
+                    font-size: 14.5px;
+                    line-height: 1.75;
+                    margin: 0;
+                    max-width: 400px;
+                    margin: 0 auto;
+                ">
+                    Select a helper from the sidebar, choose your input type,<br>
+                    and let AI accelerate your quality engineering.
+                </p>
+                <div style="
+                    display:flex; justify-content:center; gap:32px;
+                    margin-top:28px; padding-top:24px;
+                    border-top: 1px solid rgba(255,255,255,0.07);
+                ">
+                    <div style="text-align:center;">
+                        <div style="font-size:18px; font-weight:700; color:#f0f1f5;">RAS</div>
+                        <div style="font-size:11px; color:#5c5e6e; margin-top:3px; letter-spacing:0.5px;">Requirement Analysis</div>
+                    </div>
+                    <div style="width:1px; background:rgba(255,255,255,0.07);"></div>
+                    <div style="text-align:center;">
+                        <div style="font-size:18px; font-weight:700; color:#f0f1f5;">TCG</div>
+                        <div style="font-size:11px; color:#5c5e6e; margin-top:3px; letter-spacing:0.5px;">Test Case Generator</div>
+                    </div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
             st.session_state.welcome_message = True
   
     button_css_style = [
         """
         button {
-            background-color: white !important;
-            color: black !important;
-            font-weight: bold !important;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 16px;
-            border: 2px solid red !important;
+            background: #cc0000 !important;
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            padding: 10px 32px !important;
+            border-radius: 9px !important;
+            font-size: 14.5px !important;
+            border: none !important;
+            letter-spacing: 0.5px !important;
+            box-shadow: 0 4px 18px rgba(204,0,0,0.35) !important;
+            transition: all 0.22s cubic-bezier(0.4,0,0.2,1) !important;
         }
         """,
         """
         button:hover {
-            background-color: darkred !important;
-            color: white !important;
+            background: #e63333 !important;
+            box-shadow: 0 6px 24px rgba(204,0,0,0.50) !important;
+            transform: translateY(-2px) !important;
+        }
+        """,
+        """
+        button:active {
+            transform: translateY(0) !important;
+            box-shadow: 0 2px 8px rgba(204,0,0,0.30) !important;
         }
         """
     ]

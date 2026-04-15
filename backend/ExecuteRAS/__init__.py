@@ -14,22 +14,7 @@ from autogen_agentchat.messages import TextMessage
 from common.health_check import run_all_checks
 logging.basicConfig(level=logging.INFO)
 
-# Run health checks once at module load (cold start).
-# Logs all results — fails are visible in Azure Function logs / local console.
-try:
-    _startup_report = run_all_checks()
-    if _startup_report["overall"] == "fail":
-        logging.error(
-            "ExecuteRAS cold start: one or more external dependencies are NOT ready — "
-            "requests will likely fail. See health check output above."
-        )
-    elif _startup_report["overall"] == "warn":
-        logging.warning(
-            "ExecuteRAS cold start: external dependencies have warnings — "
-            "some features may degrade. See health check output above."
-        )
-except Exception as _hc_err:
-    logging.error(f"ExecuteRAS cold start: health check itself failed: {_hc_err}")
+logging.info("ExecuteRAS module loaded.")
 
 
 async def main(inputData) -> str:
