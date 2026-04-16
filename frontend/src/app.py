@@ -13,8 +13,9 @@ warnings.filterwarnings("ignore", message="Unverified HTTPS request")
 
 st.set_page_config(
     page_title="AI Helpers for QE",
+    page_icon="🤖",
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
 )
 
 JIRA_ENDPOINT = os.getenv("JIRA_ENDPOINT", "")
@@ -22,17 +23,42 @@ initialize_session_state()
 
 if "jira" not in st.session_state:
     st.session_state.jira = JiraClient(JIRA_ENDPOINT)
-jira = st.session_state.jira
 
-# ── Route ─────────────────────────────────────────────────────────────────────
-if not st.session_state.get("jira_auth_popup_actioned", False):
-    from screens.landing import render as landing
-    landing(jira)
 
-elif st.session_state.get("jira_user_authenticated", False):
-    from screens.dashboard_jira import render as jira_dash
-    jira_dash(jira)
+# ── Page callables ─────────────────────────────────────────────────────────────
+def _landing():
+    from screens.landing import render
+    render(st.session_state.jira)
 
+def _guest():
+    from screens.dashboard_guest import render
+    render(st.session_state.jira)
+
+def _jira_dash():
+    from screens.dashboard_jira import render
+    render(st.session_state.jira)
+
+
+# ── Register all pages with stable URL paths ───────────────────────────────────
+pg_landing = st.Page(_landing,   title="Home",           icon="🏠", url_path="landing",         default=True)
+pg_guest   = st.Page(_guest,     title="Dashboard",      icon="⚡", url_path="dashboard")
+pg_jira    = st.Page(_jira_dash, title="Jira Dashboard", icon="🔗", url_path="jira-dashboard")
+
+pg = st.navigation([pg_landing, pg_guest, pg_jira], position="hidden")
+
+# ── Auth-gated redirect ────────────────────────────────────────────────────────
+auth_actioned = st.session_state.get("jira_auth_popup_actioned", False)
+jira_authed   = st.session_state.get("jira_user_authenticated",  False)
+
+if not auth_actioned:
+    target = pg_landing
+elif jira_authed:
+    target = pg_jira
 else:
-    from screens.dashboard_guest import render as guest_dash
-    guest_dash(jira)
+    target = pg_guest
+
+if pg.url_path != target.url_path:
+    st.switch_page(target)
+    st.stop()
+
+pg.run()

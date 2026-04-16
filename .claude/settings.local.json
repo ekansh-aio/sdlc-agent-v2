@@ -19,7 +19,11 @@
       "Bash(rm *)",
       "Bash(xargs ls *)",
       "Bash(backend\\\\.venv\\\\Scripts\\\\python.exe -c \"import streamlit; print\\(streamlit.__version__\\); print\\(dir\\(streamlit\\)\\)\")",
-      "Bash(backend/.venv/Scripts/python.exe -c \"import streamlit; print\\(streamlit.__version__\\); print\\([x for x in dir\\(streamlit\\) if 'html' in x.lower\\(\\) or 'iframe' in x.lower\\(\\)]\\)\")"
+      "Bash(backend/.venv/Scripts/python.exe -c \"import streamlit; print\\(streamlit.__version__\\); print\\([x for x in dir\\(streamlit\\) if 'html' in x.lower\\(\\) or 'iframe' in x.lower\\(\\)]\\)\")",
+      "Bash(.venv/Scripts/streamlit cache *)",
+      "Bash(find \"D:/work/sdlc-agents/frontend/src\" -type d -name \"__pycache__\" -exec rm -rf {} +)",
+      "Bash(rm -rf \"C:/Users/CL4QR/AppData/Local/Temp/streamlit\")",
+      "Bash(rm -rf \"C:/Users/CL4QR/.streamlit/cache\")"
     ]
   }
 }

@@ -18,8 +18,8 @@ def render(jira):
     load_theme()
     st.markdown("""<style>
     #MainMenu,footer,[data-testid="stToolbar"],[data-testid="stDecoration"],
-    [data-testid="stStatusWidget"],[data-testid="stAppDeployButton"],.stDeployButton,
-    [data-testid="stHeader"] button{display:none!important}
+    [data-testid="stStatusWidget"],[data-testid="stAppDeployButton"],.stDeployButton
+    {display:none!important}
     </style>""", unsafe_allow_html=True)
     landing_gradient()
     app_header()

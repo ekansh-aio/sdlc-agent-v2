@@ -1,5 +1,20 @@
 import streamlit as st
 
+# Clear Streamlit's sidebar collapsed state from localStorage so it can never
+# get permanently stuck closed. Runs on every page load — harmless if already open.
+_SIDEBAR_RESET_JS = """
+<script>
+(function() {
+    var keys = Object.keys(localStorage);
+    keys.forEach(function(k) {
+        if (k.toLowerCase().includes('sidebar') || k.toLowerCase().includes('collapsed')) {
+            localStorage.removeItem(k);
+        }
+    });
+})();
+</script>
+"""
+
 # Robot mascot SVG — friendly AI bot face in blue/purple palette
 _MASCOT_SVG = """
 <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -33,6 +48,7 @@ _MASCOT_SVG = """
 
 
 def app_header():
+    st.html(_SIDEBAR_RESET_JS)
     st.markdown(f"""
     <div class="custom-title">
         <div style="width:34px;height:34px;flex-shrink:0;filter:drop-shadow(0 2px 8px rgba(56,139,253,0.45));">

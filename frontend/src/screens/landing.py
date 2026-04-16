@@ -12,6 +12,15 @@ JIRA_ENDPOINT = os.getenv("JIRA_ENDPOINT", "")
 
 def render(jira):
     load_theme()
+    # Clear any stale sidebar-collapsed state from localStorage
+    st.html("""<script>
+    (function(){
+        Object.keys(localStorage).forEach(function(k){
+            if(k.toLowerCase().includes('sidebar')||k.toLowerCase().includes('collapsed'))
+                localStorage.removeItem(k);
+        });
+    })();
+    </script>""")
 
     if "show_jira_login" not in st.session_state:
         st.session_state.show_jira_login = False
