@@ -99,82 +99,86 @@ class AzureAISearchClient:
             msg = f"Error performing semantic search: {e}"
             return msg
 
+    def _search_configured(self) -> bool:
+        return bool(self.search_endpoint and self.search_key)
+
     def semantic_search_tcg_manual(self, query: str):
+        if not self._search_configured():
+            logging.warning("Azure AI Search not configured — skipping vector search for TCG manual")
+            return []
 
-       
+        try:
+            search_client = SearchClient(
+                endpoint=self.search_endpoint,
+                credential=self.search_credential,
+                index_name="tcg-manual-index-v1"
+            )
 
-        search_client = SearchClient(
-            endpoint=self.search_endpoint,
-            credential=self.search_credential,
-            index_name="tcg-manual-index-v1"
-        )
+            embedding = self.get_embeddings(query)
+            if isinstance(embedding, str):  # get_embeddings returned an error string
+                logging.warning(f"Could not get embeddings: {embedding}")
+                return []
 
-        embedding = self.get_embeddings(query)
-        vector_query = [VectorizedQuery(vector=embedding, k_nearest_neighbors=50, fields="embedding")]
-
-        results = search_client.search(
-            search_text="",
-            vector_queries=vector_query,
-            search_fields=["description", "manual_test_steps", "summary"],
-            query_type="semantic",
-            semantic_configuration_name="default",
-            top=1
-        )
-        results = list(results)
-        documents = []
-        for result in results:
-            if result['@search.score'] >= 0.85:
-                description = result.get('description', '')
-                summary = result.get('summary', '')
-                priority = result.get('priority', '')
-                manual_test_steps = result.get('manual_test_steps', '')
-                documents.append(
-                    {
-                        "description": description,
-                        "summary": summary,
-                        "priority": priority,
-                        "manual_test_steps": manual_test_steps
-                    }
-                )
-        return documents
+            vector_query = [VectorizedQuery(vector=embedding, k_nearest_neighbors=50, fields="embedding")]
+            results = list(search_client.search(
+                search_text="",
+                vector_queries=vector_query,
+                search_fields=["description", "manual_test_steps", "summary"],
+                query_type="semantic",
+                semantic_configuration_name="default",
+                top=1
+            ))
+            documents = []
+            for result in results:
+                if result['@search.score'] >= 0.85:
+                    documents.append({
+                        "description": result.get('description', ''),
+                        "summary": result.get('summary', ''),
+                        "priority": result.get('priority', ''),
+                        "manual_test_steps": result.get('manual_test_steps', '')
+                    })
+            return documents
+        except Exception as e:
+            logging.warning(f"semantic_search_tcg_manual failed: {e}")
+            return []
 
     def semantic_search_tcg_cucumber(self, query: str):
+        if not self._search_configured():
+            logging.warning("Azure AI Search not configured — skipping vector search for TCG cucumber")
+            return []
 
-       
+        try:
+            search_client = SearchClient(
+                endpoint=self.search_endpoint,
+                credential=self.search_credential,
+                index_name="tcg-cucumber-index-v1"
+            )
 
-        search_client = SearchClient(
-        ##AI Search endpoint address##
-            endpoint=self.search_endpoint,  
-            credential=self.search_credential,
-            index_name="tcg-cucumber-index-v1"
-        )
+            embedding = self.get_embeddings(query)
+            if isinstance(embedding, str):
+                logging.warning(f"Could not get embeddings: {embedding}")
+                return []
 
-        embedding = self.get_embeddings(query)
-        vector_query = [VectorizedQuery(vector=embedding, k_nearest_neighbors=50, fields="embedding")]
-
-        results = search_client.search(
-            search_text="",
-            vector_queries=vector_query,
-            search_fields=["description", "cucumber_scenario", "summary"],
-            query_type="semantic",
-            semantic_configuration_name="default",
-            top=1
-        )
-        results = list(results)
-        documents = []
-        for result in results:
-            if result['@search.score'] >= 0.85:
-                description = result.get('description', '')
-                summary = result.get('summary', '')
-                priority = result.get('priority', '')
-                cucumber_scenario = result.get('cucumber_scenario', '')
-                documents.append(
-                    {
-                        "description": description,
-                        "summary": summary,
-                        "priority": priority,
-                        "cucumber_scenario": cucumber_scenario
-                    }
-                )
-        return documents
+            vector_query = [VectorizedQuery(vector=embedding, k_nearest_neighbors=50, fields="embedding")]
+            results = list(search_client.search(
+                search_text="",
+                vector_queries=vector_query,
+                search_fields=["description", "cucumber_scenario", "summary"],
+                query_type="semantic",
+                semantic_configuration_name="default",
+                top=1
+            ))
+            documents = []
+            for result in results:
+                if result['@search.score'] >= 0.85:
+                    documents.append({
+                        "description": result.get('description', ''),
+                        "summary": result.get('summary', ''),
+                        "priority": result.get('priority', ''),
+                        "cucumber_scenario": result.get('cucumber_scenario', '')
+                    })
+            return documents
+        except Exception as e:
+            logging.warning(f"semantic_search_tcg_cucumber failed: {e}")
+            return []
 

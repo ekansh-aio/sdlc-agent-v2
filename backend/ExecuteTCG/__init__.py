@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import re
 from autogen_agentchat.conditions import TextMessageTermination, TextMentionTermination, MaxMessageTermination
 from autogen_agentchat.teams import SelectorGroupChat
 from agents.tcg.agent_builder import TCGAgentBuilder
@@ -146,8 +147,21 @@ class TestCaseProcessor:
                     filter_data = [i for i in final_data if "```json" in i]
                     if filter_data:
                         raw_json_block = filter_data[0]
-                    lst_of_tests = eval(filter_data[0].split("```json\n")[1].split("```")[0])
-                    lst_of_tests = lst_of_tests.get('finalData') if lst_of_tests.get('finalData', None) else lst_of_tests['finalResponse']['finalData']
+
+                    # Extract JSON from the code fence — handle both ```json{ and ```json\n{
+                    raw_content = filter_data[0]
+                    json_match = re.search(r'```json\s*(\{.*?\})\s*```', raw_content, re.DOTALL)
+                    if not json_match:
+                        raise ValueError("No JSON block found in agent output")
+                    parsed = json.loads(json_match.group(1))
+
+                    # Support both finalData and finalResponse.finalData
+                    lst_of_tests = (
+                        parsed.get('finalData')
+                        or parsed.get('finalResponse', {}).get('finalData')
+                    )
+                    if not lst_of_tests:
+                        raise ValueError(f"No finalData key in parsed JSON: {list(parsed.keys())}")
                     idx = 0
                     tests_len = len(lst_of_tests)
                     if self.issue_type in ['text_manual', 'Manual']:
@@ -160,14 +174,17 @@ class TestCaseProcessor:
                                 else:
                                     all_str += 'ManualSteps: \n'
                                     for nested_data in txt[key]:
-                                        for nested_key in nested_data.keys():
-                                            if isinstance(nested_data[nested_key], dict):
-                                                for sub_nested_key in nested_data[nested_key].keys():
-                                                    all_str += '    ' + sub_nested_key + ': ' + str(
-                                                        nested_data[nested_key][sub_nested_key]) + '\n'
-                                            else:
-                                                all_str += '    ' + nested_key + ': ' + str(
-                                                    nested_data[nested_key]) + '\n'
+                                        if not isinstance(nested_data, dict):
+                                            all_str += '    ' + str(nested_data) + '\n'
+                                            continue
+                                        # Handle {"Step": {"Action":...}} and flat {"Action":...} both
+                                        step_content = nested_data.get('Step', nested_data)
+                                        if isinstance(step_content, dict):
+                                            for sub_key, sub_val in step_content.items():
+                                                all_str += '    ' + sub_key + ': ' + str(sub_val) + '\n'
+                                        else:
+                                            for nested_key, nested_val in nested_data.items():
+                                                all_str += '    ' + nested_key + ': ' + str(nested_val) + '\n'
                             display_data += (all_str + ('\n ********** \n' if idx != tests_len else ''))
                         self.result = display_data
                     else:

@@ -8,50 +8,30 @@ data_extractor_prompt = '''
         * do not respond for any agent response.
     '''
 
-data_extractor_prompt_jira = '''
+data_extractor_prompt_jira = """
     You are the initial agent in a tool-based workflow.
 
     Instructions:
 
-        *Your primary task is to send the user input to the external tool and get a response.
+        * Your primary task is to send the user input to the external tool and get a response.
 
-        *If the tool returns response is that strictly similar and relevant to the user input get similar and relevant best 
-            match from the response list, 
-            - you should return relevant best matched test cases from tool response along with user input to "analyser_agent". 
-            otherwise return only user input to "analyser_agent".                                                             
+        * If the tool returns a response that is strictly similar and relevant to the user input,
+          select the most relevant best match from the response list and return it together with
+          the user input to "analyser_agent".
+          Otherwise return only the user input to "analyser_agent".
 
-        *If the tool response is not related or does not return similar results to the user input,
-        you should return UserInput to "analyser_ageni am getting these errors are these because postgress have not prompts in it, but doesn't it automaticaaly insert the prompts in it [2025-07-01T13:00:57.315Z] Worker failed to load function: 'ExecuteTCG' with functionId: 'ff322fca-275f-44f4-a38f-af4e39433465'.
-[2025-07-01T13:00:57.315Z] Result: Failure
-[2025-07-01T13:00:57.315Z] Exception: RuntimeError: Error fetching value for name TCG and team_prompt
-[2025-07-01T13:00:57.316Z] Stack: File "/usr/lib/azure-functions-core-tools-4/workers/python/3.10/LINUX/X64/azure_functions_worker/dispatcher.py", line 535, in _handle__function_load_request
-[2025-07-01T13:00:57.316Z] func = loader.load_function(
-[2025-07-01T13:00:57.316Z] File "/usr/lib/azure-functions-core-tools-4/workers/python/3.10/LINUX/X64/azure_functions_worker/utils/wrappers.py", line 44, in call
-[2025-07-01T13:00:57.316Z] return func(*args, **kwargs)
-[2025-07-01T13:00:57.316Z] File "/usr/lib/azure-functions-core-tools-4/workers/python/3.10/LINUX/X64/azure_functions_worker/loader.py", line 220, in load_function
-[2025-07-01T13:00:57.316Z] mod = importlib.import_module(fullmodname)
-[2025-07-01T13:00:57.317Z] File "/usr/lib/python3.10/importlib/init.py", line 126, in import_module
-[2025-07-01T13:00:57.317Z] return _bootstrap._gcd_import(name[level:], package, level)
-[2025-07-01T13:00:57.317Z] File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
-[2025-07-01T13:00:57.317Z] File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
-[2025-07-01T13:00:57.317Z] File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
-[2025-07-01T13:00:57.317Z] File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
-[2025-07-01T13:00:57.317Z] File "<frozen importlib._bootstrap_external>", line 883, in exec_module
-[2025-07-01T13:00:57.317Z] File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
-[2025-07-01T13:00:57.317Z] File "/home/treptos/sdlc-agents/backend/ExecuteTCG/init.py", line 17, in <module>
-[2025-07-01T13:00:57.317Z] team_prompt = prompt_manager.get_prompt(
-[2025-07-01T13:00:57.317Z] File "/home/treptos/sdlc-agents/backend/common/prompts/prompt_manager.py", line 26, in get_prompt
-[2025-07-01T13:00:57.317Z] raise RuntimeError(f"Error fetching value for name {ai_helper_name} and {agent_name}")
-[2025-07-01T13:00:57.317Z] .t".
+        * If the tool response is not related, does not return similar results, or the tool is
+          unavailable, return only the user input to "analyser_agent".
 
-        *You can handover the user input to the "analyser_agent" only once during the entire conversation.
+        * You can hand over the user input to the "analyser_agent" only once during the entire
+          conversation.
 
-        *After handing over the user input to the "analyser_agent", strictly do not respond anymore during the whole conversation.
+        * After handing over, strictly do not respond anymore during the whole conversation.
 
-        *Remain idle during the conversation between other agents.
+        * Remain idle during the conversation between other agents.
 
-        *Do not respond to any agent response.
-    '''
+        * Do not respond to any agent response.
+    """
 
 analyser_prompt_text_manual = '''
         You are a software testing expert tasked with generating manual test cases from 'request_handler_agent' response.

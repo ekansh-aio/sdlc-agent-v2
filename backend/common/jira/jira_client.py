@@ -8,6 +8,51 @@ import json
 import base64
 
 
+def _to_adf(text: str) -> dict:
+    """
+    Convert a plain-text string to Atlassian Document Format (ADF).
+    Required by Jira Cloud REST API v3 for description and comment body fields.
+    Preserves line breaks by splitting on newlines into separate paragraph nodes.
+    """
+    if not text:
+        return {"version": 1, "type": "doc", "content": []}
+
+    paragraphs = []
+    for line in text.splitlines():
+        if line.strip():
+            paragraphs.append({
+                "type": "paragraph",
+                "content": [{"type": "text", "text": line}]
+            })
+        else:
+            paragraphs.append({"type": "paragraph", "content": []})
+
+    return {"version": 1, "type": "doc", "content": paragraphs or [{"type": "paragraph", "content": []}]}
+
+
+def _from_adf(adf) -> str:
+    """
+    Extract plain text from an ADF node (for reading description/comments back).
+    """
+    if adf is None:
+        return ""
+    if isinstance(adf, str):
+        return adf
+    if not isinstance(adf, dict):
+        return str(adf)
+
+    def _walk(node) -> str:
+        if node.get("type") == "text":
+            return node.get("text", "")
+        parts = [_walk(child) for child in node.get("content", [])]
+        joined = "".join(parts)
+        if node.get("type") in ("paragraph", "heading", "bulletList", "orderedList", "listItem", "blockquote", "codeBlock"):
+            joined += "\n"
+        return joined
+
+    return _walk(adf).strip()
+
+
 class JiraClient:
     """
        A class to manage Jira sessions using basic authentication.
@@ -50,7 +95,7 @@ class JiraClient:
         """
         authenticate jira username by calling myself api. Return true is success else raises exception.
         """
-        url = f"{self.base_url}/rest/api/2/myself"
+        url = f"{self.base_url}/rest/api/3/myself"
         response = requests.get(url, headers=self.headers)
         if response.status_code == 200:
             username = response.json()
@@ -71,7 +116,7 @@ class JiraClient:
         issue_type_query = ", ".join([f'"{type}"' for type in issues_types])
         jql = f"issuetype in ({issue_type_query}) order by updated DESC"
 
-        url = f"{self.base_url}/rest/api/2/search"
+        url = f"{self.base_url}/rest/api/3/search/jql"
         start_at = 0
         all_issue_keys = []
         max_results = 200
@@ -106,24 +151,20 @@ class JiraClient:
 
     def fetch_issue_details(self, jira_id):
         """Fetch issue details from Jira."""
-        issue_url = f"{self.base_url}/rest/api/2/issue/{jira_id}"
-        print("issue_url: ", issue_url)
-        response = requests.get(issue_url, headers=self.headers)
-        print("response: ", response.status_code)
+        issue_url = f"{self.base_url}/rest/api/3/issue/{jira_id}"
+        response = requests.get(issue_url, headers=self.headers, verify=False)
         if response.status_code == 200:
-            print("response: ", response.status_code)
             issue_data = response.json()
             project_name = issue_data["fields"]["project"]["name"]
-            description = issue_data["fields"].get("description", "No Description Available")
+            # API v3 returns description as ADF — extract plain text
+            description = _from_adf(issue_data["fields"].get("description")) or "No Description Available"
             summary = issue_data["fields"]["summary"]
-            logging.info(f"Project: {project_name}")
-            logging.info(f"Summary: {summary}")
-            logging.info(f"Description: {description}")
+            logging.info(f"Fetched {jira_id} — project={project_name}, summary={summary}")
             return issue_data["key"], summary, description
         elif response.status_code == 401:
-            print("Authentication failed: Invalid credentials or missing permissions.")
+            logging.warning(f"Authentication failed fetching {jira_id}")
         else:
-            print(f"Request failed ({response.status_code}): {response.text}")
+            logging.error(f"Request failed ({response.status_code}): {response.text}")
 
         return None, None, None
 
@@ -146,14 +187,15 @@ class JiraClient:
         else:
             return 401, "Not authenticated. No valid credentials or session cookies found."
             
-        issue_url = f"{self.base_url}/rest/api/2/issue/{jira_id}"
+        issue_url = f"{self.base_url}/rest/api/3/issue/{jira_id}"
 
         # Build payload with only valid Jira fields, handling None values
+        # API v3 requires ADF for description
         fields = {}
         if agent_title is not None and str(agent_title).strip():
             fields["summary"] = str(agent_title).strip()
         if agent_description is not None and str(agent_description).strip():
-            fields["description"] = str(agent_description).strip()
+            fields["description"] = _to_adf(str(agent_description).strip())
 
         if not fields:
             return 400, "No valid fields to update. Both title and description are empty or None."
@@ -302,7 +344,7 @@ class JiraClient:
         if not self.cookies:
             logging.info("Not logged in. Call login() first.")
             return None
-        url = f'{self.base_url}/rest/api/2/myself'
+        url = f'{self.base_url}/rest/api/3/myself'
         user_info_response = self.execute_jira_request_until_sucess(url, 'get')
 
         if user_info_response.status_code == 200:
@@ -324,7 +366,7 @@ class JiraClient:
         if not self.cookies:
             logging.info("Not logged in. Call login() first.")
             return None
-        url = f'{self.base_url}/rest/api/2/issue/{issue_key}'
+        url = f'{self.base_url}/rest/api/3/issue/{issue_key}'
         issue_response = self.execute_jira_request_until_sucess(url, 'get')
 
         if issue_response.status_code == 200:
@@ -365,14 +407,14 @@ class JiraClient:
         :param test_type: Type of test ("Manual" or "Cucumber")
         :return: JSON response from the Jira API containing the new issue details
         """
-        url = f"{self.base_url}/rest/api/2/issue/"
+        url = f"{self.base_url}/rest/api/3/issue/"
         if not self.cookies:
             return self.default_message
         payload = {
             "fields": {
                 "project": {"key": project_key},
                 "summary": summary,
-                "description": description,
+                "description": _to_adf(description),
                 "issuetype": {"name": "Test"},
                 "priority": {"name": priority},
                 "customfield_10125": {
@@ -414,7 +456,7 @@ class JiraClient:
         """
         if not self.cookies:
             return self.default_message
-        url = f"{self.base_url}/rest/api/2/issue/{issue_key}"
+        url = f"{self.base_url}/rest/api/3/issue/{issue_key}"
         payload = {
             "fields": {
                 "customfield_10127": cucumber_data  # Custom field for Cucumber data
@@ -435,7 +477,7 @@ class JiraClient:
         """
         if not self.cookies:
             return self.default_message
-        url = f"{self.base_url}/rest/api/2/issueLink"
+        url = f"{self.base_url}/rest/api/3/issueLink"
         payload = {
             "type": {"name": link_type},
             "inwardIssue": {"key": child_key},
@@ -453,7 +495,7 @@ class JiraClient:
         """
         if not self.cookies:
             return self.default_message
-        issue_url = f"{self.base_url}/rest/api/2/issue/{jira_id}"
+        issue_url = f"{self.base_url}/rest/api/3/issue/{jira_id}"
         response = self.execute_jira_request_until_sucess(issue_url, 'get')
         return response
 
@@ -468,7 +510,7 @@ class JiraClient:
         """
         if not self.cookies:
             return self.default_message
-        url = f"{self.base_url}/rest/api/2/issue/{jira_id}"
+        url = f"{self.base_url}/rest/api/3/issue/{jira_id}"
         payload = {
             "fields": {
                 "summary": summary,
@@ -482,9 +524,10 @@ class JiraClient:
     def _add_comment(self, jira_id, comment_text):
         """Add a comment to a Jira issue."""
         try:
-            comment_url = f"{self.base_url}/rest/api/2/issue/{jira_id}/comment"
+            comment_url = f"{self.base_url}/rest/api/3/issue/{jira_id}/comment"
+            # API v3 requires ADF for comment body
             comment_payload = {
-                "body": comment_text
+                "body": _to_adf(comment_text)
             }
             
             # Use the same authentication method as update_jira_issue

@@ -9,7 +9,17 @@
       "Bash(where.exe func *)",
       "Bash(git log *)",
       "Bash(frontend/.venv/Scripts/python.exe -c ' *)",
-      "Bash(D:/work/sdlc-agents/frontend/.venv/Scripts/python.exe *)"
+      "Bash(D:/work/sdlc-agents/frontend/.venv/Scripts/python.exe *)",
+      "Bash(\"D:/work/sdlc-agents/frontend/.venv/Scripts/python.exe\" -c \"import py_compile; py_compile.compile\\('components/dialogs.py', doraise=True\\); print\\('OK'\\)\")",
+      "Bash(xargs wc *)",
+      "Bash(.venv/Scripts/python.exe -c ' *)",
+      "Bash(.venv/Scripts/python -c \"import streamlit; print\\(streamlit.__version__\\)\")",
+      "Bash(.venv/Scripts/python -c \"import streamlit as st; print\\(hasattr\\(st, 'fragment'\\)\\); import inspect; sig = inspect.signature\\(st.rerun\\); print\\(sig\\)\")",
+      "Bash(grep -E \"\\\\.\\(sh|bat|cmd|txt|toml\\)$|Makefile|Dockerfile\")",
+      "Bash(rm *)",
+      "Bash(xargs ls *)",
+      "Bash(backend\\\\.venv\\\\Scripts\\\\python.exe -c \"import streamlit; print\\(streamlit.__version__\\); print\\(dir\\(streamlit\\)\\)\")",
+      "Bash(backend/.venv/Scripts/python.exe -c \"import streamlit; print\\(streamlit.__version__\\); print\\([x for x in dir\\(streamlit\\) if 'html' in x.lower\\(\\) or 'iframe' in x.lower\\(\\)]\\)\")"
     ]
   }
 }

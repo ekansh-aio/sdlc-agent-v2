@@ -3,8 +3,13 @@ from autogen_agentchat.agents import AssistantAgent
 from common.ai_search.azure_ai_search_client import AzureAISearchClient
 from common.llm.llm_config import LLMConfig
 from common.prompts.prompt_manager import PromptManager
-from common.prompts.tcg_prompts import data_extractor_prompt, data_extractor_prompt_jira, analyser_prompt_manual, \
-    analyser_prompt_automatic
+from common.prompts.tcg_prompts import (
+    data_extractor_prompt, data_extractor_prompt_jira,
+    analyser_prompt_manual, analyser_prompt_automatic,
+    analyser_prompt_text_manual, analyser_prompt_text_automatic,
+    reviewer_prompt, final_response_generator_prompt,
+    final_response_generator_prompt_cucumber,
+)
 from common.utils.utility import check_pii_exist, get_user_story_data
 
 llm_config = LLMConfig()
@@ -21,23 +26,22 @@ class TCGAgentBuilder:
 
     def create_analyser_agent(self) -> AssistantAgent:
 
-        # prompt_name = "analyser_prompt_text_automatic" if self.test_type == 'text_automatic' else (
-        #     "analyser_prompt_text_manual") if self.test_type == 'text_manual' else "analyser_prompt_manual" \
-        #     if self.test_type == 'Manual' else "analyser_prompt_automatic"
-        prompt_name=''
-        prompt=''
         if self.test_type == 'text_automatic':
-            prompt_name = 'analyser_prompt_text_automatic'
-            prompt = prompt_manager.get_prompt(
-                ai_helper_name=self.ai_helper_name,
-                agent_name=prompt_name
-            )
+            try:
+                prompt = prompt_manager.get_prompt(
+                    ai_helper_name=self.ai_helper_name,
+                    agent_name='analyser_prompt_text_automatic'
+                )
+            except Exception:
+                prompt = analyser_prompt_text_automatic
         elif self.test_type == 'text_manual':
-            prompt_name =  'analyser_prompt_text_manual'
-            prompt = prompt_manager.get_prompt(
-                ai_helper_name=self.ai_helper_name,
-                agent_name=prompt_name
-            )
+            try:
+                prompt = prompt_manager.get_prompt(
+                    ai_helper_name=self.ai_helper_name,
+                    agent_name='analyser_prompt_text_manual'
+                )
+            except Exception:
+                prompt = analyser_prompt_text_manual
         elif self.test_type == 'Manual':
             # TODO: move prompt to DB — insert row ('TCG', 'analyser_prompt_manual') in agent_prompts
             # and replace with: prompt = prompt_manager.get_prompt(ai_helper_name='TCG', agent_name='analyser_prompt_manual')
@@ -85,11 +89,13 @@ class TCGAgentBuilder:
         )
 
     def create_reviewer_agent(self) -> AssistantAgent:
-
-        prompt = prompt_manager.get_prompt(
-            ai_helper_name=self.ai_helper_name,
-            agent_name="reviewer_prompt"
-        )
+        try:
+            prompt = prompt_manager.get_prompt(
+                ai_helper_name=self.ai_helper_name,
+                agent_name="reviewer_prompt"
+            )
+        except Exception:
+            prompt = reviewer_prompt
 
         return AssistantAgent(
             name="reviewer_agent",
@@ -100,11 +106,16 @@ class TCGAgentBuilder:
     def create_final_response_generator_agent(self) -> AssistantAgent:
         prompt_name = "final_response_generator_prompt" if self.test_type in ['text_manual', 'Manual'] else \
             "final_response_generator_prompt_cucumber"
+        fallback = final_response_generator_prompt if self.test_type in ['text_manual', 'Manual'] else \
+            final_response_generator_prompt_cucumber
 
-        prompt = prompt_manager.get_prompt(
-            ai_helper_name=self.ai_helper_name,
-            agent_name=prompt_name
-        )
+        try:
+            prompt = prompt_manager.get_prompt(
+                ai_helper_name=self.ai_helper_name,
+                agent_name=prompt_name
+            )
+        except Exception:
+            prompt = fallback
 
         return AssistantAgent(
             name="final_response_generator_agent",
