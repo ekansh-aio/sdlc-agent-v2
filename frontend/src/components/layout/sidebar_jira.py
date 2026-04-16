@@ -81,23 +81,52 @@ def jira_sidebar(jira):
 
         # ── Ticket picker ──
         if st.session_state.get("selected_input_type") == INPUT_JIRA:
+            col_label, col_refresh = st.columns([4, 1])
+            with col_label:
+                st.markdown('<div class="sb-section-label" style="margin-top:6px">Select tickets:</div>', unsafe_allow_html=True)
+            with col_refresh:
+                if st.button("↺", key="refresh_tickets", help="Reload tickets from Jira"):
+                    st.session_state.pop("jira_ids_all", None)
+                    st.session_state.jira_fetch_error = None
+                    st.rerun()
+
             if "jira_ids_all" not in st.session_state:
-                with st.spinner("Loading tickets..."):
-                    st.session_state.jira_ids_all = jira.get_accessible_issues(["Story"])
+                with st.spinner("Loading Jira stories..."):
+                    try:
+                        ids = jira.get_accessible_issues(["Story"])
+                        st.session_state.jira_ids_all    = ids
+                        st.session_state.jira_fetch_error = None
+                    except Exception as e:
+                        st.session_state.jira_ids_all    = []
+                        st.session_state.jira_fetch_error = str(e)
+
+            fetch_err = st.session_state.get("jira_fetch_error")
+            if fetch_err:
+                st.error(f"Could not load tickets: {fetch_err}")
+
+            all_ids = st.session_state.get("jira_ids_all", [])
             count   = st.session_state.get("jira_display_count", 200)
-            to_show = st.session_state.jira_ids_all[:count]
+            to_show = all_ids[:count]
+
+            if all_ids:
+                st.caption(f"{len(all_ids)} stor{'y' if len(all_ids)==1 else 'ies'} found")
+            elif not fetch_err:
+                st.info("No Stories found in this Jira project. Make sure your tickets are of type **Story**.")
+
             selected = st.multiselect(
-                "Select tickets:",
+                "Jira Stories",
                 options=to_show,
-                default=st.session_state.get("jira_selected", []),
+                default=[t for t in st.session_state.get("jira_selected", []) if t in to_show],
                 key="jira_multiselect",
                 on_change=_update_jira_selected,
+                label_visibility="collapsed",
+                placeholder="Type to search or pick tickets…",
             )
             if selected != st.session_state.get("jira_selected", []):
                 st.session_state.jira_selected = selected
-            if count < len(st.session_state.jira_ids_all):
-                if st.button("Load more", key="load_more"):
-                    st.session_state.jira_display_count = count + 10
+            if count < len(all_ids):
+                if st.button(f"Load more ({len(all_ids) - count} remaining)", key="load_more"):
+                    st.session_state.jira_display_count = count + 50
                     st.rerun()
 
         st.markdown('<hr style="border-color:rgba(255,255,255,0.06);margin:12px 0">', unsafe_allow_html=True)

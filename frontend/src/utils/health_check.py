@@ -110,7 +110,7 @@ def check_jira_endpoint() -> dict:
 
     try:
         r = requests.get(
-            f"{jira_endpoint}/rest/api/2/serverInfo",
+            f"{jira_endpoint}/rest/api/3/serverInfo",
             timeout=10,
             verify=False,
         )

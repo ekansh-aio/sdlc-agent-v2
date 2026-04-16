@@ -1,5 +1,4 @@
 import streamlit as st
-import streamlit.components.v1 as components
 
 
 def star_rating(label: str, key: str):
@@ -7,7 +6,7 @@ def star_rating(label: str, key: str):
         f'<div style="font-size:12px;color:#6e7681;font-weight:500;margin-bottom:2px;">{label}</div>',
         unsafe_allow_html=True,
     )
-    components.html(f"""
+    st.html(f"""
     <style>
         .star-rating {{ display:flex;flex-direction:row-reverse;justify-content:left;font-size:1.8em; }}
         .star-rating input[type="radio"] {{ display:none; }}
@@ -24,4 +23,4 @@ def star_rating(label: str, key: str):
         <input type="radio" id="{key}_2" name="{key}" value="2"><label for="{key}_2">★</label>
         <input type="radio" id="{key}_1" name="{key}" value="1"><label for="{key}_1">★</label>
     </div>
-    """, height=50)
+    """)

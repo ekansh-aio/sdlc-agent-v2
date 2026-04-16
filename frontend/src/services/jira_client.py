@@ -6,6 +6,28 @@ import base64
 import streamlit as st
 
 
+def _from_adf(adf) -> str:
+    """Extract plain text from a Jira API v3 Atlassian Document Format node."""
+    if adf is None:
+        return ""
+    if isinstance(adf, str):
+        return adf
+    if not isinstance(adf, dict):
+        return str(adf)
+
+    def _walk(node) -> str:
+        if node.get("type") == "text":
+            return node.get("text", "")
+        parts = [_walk(child) for child in node.get("content", [])]
+        joined = "".join(parts)
+        if node.get("type") in ("paragraph", "heading", "bulletList", "orderedList",
+                                "listItem", "blockquote", "codeBlock"):
+            joined += "\n"
+        return joined
+
+    return _walk(adf).strip()
+
+
 class JiraClient:
     def __init__(self, base_url: str):
         """
@@ -35,7 +57,7 @@ class JiraClient:
         """
         authenticate jira user by calling myself api. Return true is success else raises exception.
         """
-        url = f"{self.base_url}/rest/api/2/myself"
+        url = f"{self.base_url}/rest/api/3/myself"
         response = requests.get(url, headers =self.headers,verify=False)
         if response.status_code == 200:
             user = response.json()
@@ -59,10 +81,11 @@ class JiraClient:
         issue_type_query = ", ".join([f'"{type}"' for type in issues_types])
         jql = f"issuetype in ({issue_type_query}) order by updated DESC"
 
-        url = f"{self.base_url}/rest/api/2/search"
+        url = f"{self.base_url}/rest/api/3/search/jql"
         start_at = 0
         all_issue_keys = []
         max_results = st.session_state.jira_ids_max_results
+        logging.info(f"Fetching Jira issues with JQL: {jql}")
         try:
             while True:
                 params = {
@@ -71,21 +94,24 @@ class JiraClient:
                     "startAt": start_at,
                     "maxResults": max_results
                 }
-                response = requests.get(url, headers=self.headers, params=params,verify=False)
+                response = requests.get(url, headers=self.headers, params=params, verify=False)
+                logging.info(f"Jira search response: {response.status_code}")
                 if response.status_code == 200:
                     data = response.json()
-                    issues = data.get("issues",[])
+                    total  = data.get("total", 0)
+                    issues = data.get("issues", [])
                     issue_keys = [issue["key"] for issue in issues]
                     all_issue_keys.extend(issue_keys)
+                    logging.info(f"Page startAt={start_at}: got {len(issues)} issues, total={total}")
 
-                    if start_at + max_results >= data.get("total", 0):
+                    if start_at + max_results >= total:
                         break
                     else:
                         start_at += max_results
                 else:
                     logging.error(f"Failed to fetch issues: {response.status_code} - {response.text}")
-                    break
-            
+                    raise RuntimeError(f"Jira API error {response.status_code}: {response.text}")
+
             logging.info(f"Total filtered issues fetched: {len(all_issue_keys)}")
             return all_issue_keys
         except requests.RequestException:
@@ -101,12 +127,13 @@ class JiraClient:
 
     def fetch_issue_details(self, jira_id):
         """Fetch issue details from Jira."""
-        issue_url = f"{self.base_url}/rest/api/2/issue/{jira_id}"
+        issue_url = f"{self.base_url}/rest/api/3/issue/{jira_id}"
         response = requests.get(issue_url, headers=self.headers, verify=False)
         if response.status_code == 200:
             issue_data = response.json()
             project_name = issue_data["fields"]["project"]["name"]
-            description = issue_data["fields"].get("description", "No Description Available")
+            # API v3 returns description as ADF — extract plain text
+            description = _from_adf(issue_data["fields"].get("description")) or "No Description Available"
             summary = issue_data["fields"]["summary"]
             logging.info(f"Fetched issue {jira_id}: {summary}")
             return issue_data["key"], summary, description
@@ -118,7 +145,7 @@ class JiraClient:
 
     def update_jira_issue(self,headers,jira_id, agent_title, agent_description):
         """Update the Jira issue with the refined title and description."""
-        issue_url = f"{self.base_url}/rest/api/2/issue/{jira_id}"
+        issue_url = f"{self.base_url}/rest/api/3/issue/{jira_id}"
         
         payload = {
             "fields": {

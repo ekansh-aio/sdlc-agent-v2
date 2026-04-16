@@ -9,6 +9,7 @@ import requests
 import streamlit as st
 
 from services.agent_client import call_agent
+from services.jira_client import _from_adf
 from utils.formatters import is_garbage_input, fmt_tcg_response
 from components.widgets.response_card import response_card
 
@@ -17,18 +18,19 @@ PROJ_KEY      = os.getenv("PROJ_KEY", "")
 
 
 def _fetch_jira_issue(jira_id: str, headers: dict) -> dict:
-    url  = f"{JIRA_ENDPOINT}rest/api/2/issue/{jira_id}"
+    url  = f"{JIRA_ENDPOINT}rest/api/3/issue/{jira_id}"
     resp = requests.get(url, headers=headers, verify=False)
     if resp.status_code != 200:
         raise Exception(f"{resp.status_code} — {resp.text}")
     data = resp.json()
     if data["fields"]["issuetype"]["name"].lower() != "story":
         raise ValueError(f"{jira_id} is not a Story.")
+    # API v3 returns description and custom fields as ADF — extract plain text
     return {
         "key":                data["key"],
         "summary":            data["fields"]["summary"],
-        "description":        data["fields"].get("description", ""),
-        "acceptance_criteria":data["fields"].get("customfield_12077", "Not Given"),
+        "description":        _from_adf(data["fields"].get("description")) or "",
+        "acceptance_criteria":_from_adf(data["fields"].get("customfield_12077")) or "Not Given",
     }
 
 
